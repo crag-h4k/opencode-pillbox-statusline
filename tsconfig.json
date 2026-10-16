@@ -12,7 +12,13 @@
     "allowJs": true,
     "checkJs": false,
     "erasableSyntaxOnly": true,
-    "types": ["node"]
+    "types": [
+      "node"
+    ]
   },
-  "include": ["*.ts", "*.tsx", "*.mjs"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.mjs"
+  ]
 }

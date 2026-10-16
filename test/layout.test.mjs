@@ -1,9 +1,9 @@
 // test/layout.test.mjs
 import assert from "node:assert/strict"
 import test from "node:test"
-import { resolveConfig } from "../config/resolve.mjs"
-import { fitBar, partsWidth, pillParts, sizesOf } from "../layout.mjs"
-import { displayWidth } from "../width.mjs"
+import { resolveConfig } from "../src/config/resolve.mjs"
+import { fitBar, partsWidth, pillParts, sizesOf } from "../src/render/layout.mjs"
+import { displayWidth } from "../src/render/width.mjs"
 
 const CAPS = { left: "\uE0B6", right: "\uE0B4" }
 

@@ -11,8 +11,8 @@ import {
   subagentFrame,
   subagentLabel,
   waitingForInput,
-} from "../activity.mjs"
-import { displayWidth } from "../width.mjs"
+} from "../src/render/activity.mjs"
+import { displayWidth } from "../src/render/width.mjs"
 
 test("spinner frames are distinct single-cell glyphs", () => {
   for (const frame of [...FOREGROUND_SPINNER_FRAMES, ...BACKGROUND_SPINNER_FRAMES]) {

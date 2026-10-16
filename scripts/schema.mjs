@@ -4,7 +4,7 @@
 import { readFileSync, writeFileSync } from "node:fs"
 import { pathToFileURL } from "node:url"
 import { Schema } from "effect"
-import { OptionsSchema } from "../config/schema.mjs"
+import { OptionsSchema } from "../src/config/schema.mjs"
 
 const TARGET = new URL("../schema.json", import.meta.url)
 

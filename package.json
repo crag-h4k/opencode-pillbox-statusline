@@ -21,18 +21,12 @@
     "node": ">=26.4.0"
   },
   "exports": {
-    ".": "./index.ts",
-    "./tui": "./tui.tsx",
-    "./rpc": "./rpc.ts"
+    ".": "./src/index.ts",
+    "./tui": "./src/tui.tsx",
+    "./rpc": "./src/rpc.ts"
   },
   "files": [
-    "index.ts",
-    "tui.tsx",
-    "rpc.ts",
-    "*.mjs",
-    "config/",
-    "pills/",
-    "server/",
+    "src/",
     "schema.json",
     "README.md",
     "LICENSE",

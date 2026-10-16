@@ -1,10 +1,10 @@
 // test/pills.test.mjs
 import assert from "node:assert/strict"
 import test from "node:test"
-import { resolveConfig } from "../config/resolve.mjs"
-import { iconSet } from "../icons.mjs"
-import { pillById } from "../pills/index.mjs"
-import { quota } from "../pills/provider.mjs"
+import { resolveConfig } from "../src/config/resolve.mjs"
+import { iconSet } from "../src/render/icons.mjs"
+import { pillById } from "../src/pills/index.mjs"
+import { quota } from "../src/pills/provider.mjs"
 
 const { config } = resolveConfig(undefined)
 const icons = iconSet("nerd")
