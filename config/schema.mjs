@@ -54,7 +54,9 @@ export const ROOT_FIELDS = Object.freeze({
     gap: between(0, 4).annotate({ description: "Columns between pills" }),
   })),
   layout: Schema.Struct(optional({
-    reserve: between(0, 200).annotate({ description: "Columns kept free for the editor file name in the session footer" }),
+    reserve: between(0, 200).annotate({
+      description: "Columns to leave empty after the session footer's pills; the footer already measures its own slot, so 0 fits it exactly",
+    }),
     hysteresis: between(0, 20).annotate({ description: "Spare columns needed before a pill grows back" }),
   })),
   sources: Schema.Struct(optional({
@@ -62,10 +64,9 @@ export const ROOT_FIELDS = Object.freeze({
       refresh: between(15, 3600).annotate({ description: "Seconds between provider quota refreshes" }),
     })),
     tiers: Schema.Struct(optional({
-      enabled: Schema.Boolean.annotate({
-        description: "Fetch GitHub Copilot model categories; sends VS Code Copilot Chat client headers",
+      refresh: between(600, 86400).annotate({
+        description: "Seconds between GitHub Copilot model-category refreshes; the server half fetches them only with `tiers: true` in its opencode.jsonc options",
       }),
-      refresh: between(600, 86400).annotate({ description: "Seconds between category refreshes" }),
     })),
   })),
   pills: Schema.Struct(Object.fromEntries(PILLS.map((pill) => [pill.id, Schema.optionalKey(pillSchema(pill))]))),

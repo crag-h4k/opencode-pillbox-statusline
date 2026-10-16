@@ -54,3 +54,27 @@ export function limitSummary(usage, now = Date.now()) {
     usedPercent: Math.max(...windows.map((value) => value.usedPercent)),
   }
 }
+
+/**
+ * One provider's pillbox.usage entry with stale figures removed, ready for the
+ * provider pill. Figures older than five minutes are dropped rather than shown
+ * as current.
+ * @param {{ auth?: string, updatedAt?: number, copilot?: object, windows?: object[] } | undefined} usage
+ */
+export function freshUsage(usage, now = Date.now()) {
+  if (!usage || typeof usage !== "object") return {}
+  const out = {}
+  if (usage.auth === "oauth" || usage.auth === "key") out.auth = usage.auth
+  const age = typeof usage.updatedAt === "number" ? now - usage.updatedAt : Number.NaN
+  const copilot = usage.copilot
+  const validCopilot = copilot && typeof copilot.unlimited === "boolean" && typeof copilot.usedPercent === "number" &&
+    Number.isFinite(copilot.usedPercent)
+  if (validCopilot && age >= 0 && age < LIMIT_MAX_AGE_MS) {
+    out.copilot = { usedPercent: Math.min(100, Math.max(0, Math.round(copilot.usedPercent))), unlimited: copilot.unlimited }
+  }
+  if (usage.windows) {
+    const normalized = normalizeUsage({ updatedAt: usage.updatedAt, windows: usage.windows }, now)
+    if (normalized) out.windows = normalized.windows
+  }
+  return out
+}
