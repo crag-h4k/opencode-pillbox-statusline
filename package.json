@@ -27,7 +27,8 @@
   ],
   "scripts": {
     "test": "node --disable-warning=ExperimentalWarning --test test/",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "schema": "node scripts/schema.mjs"
   },
   "peerDependencies": {
     "@opencode/plugin": ">=2.0.26",

@@ -43,21 +43,66 @@ terminal reloads plugins when their files change.
 
 ## Configuration
 
-Options are keyed by pill id, so an override names only what changes. Colors
-are theme tokens such as `feedback.warning` or `hue.accent`, never palette
-copies.
+Options are keyed by pill id, so an override names only what changes. Lists
+replace rather than merge. Built-in defaults apply first, then the preset, then
+your options. A mistake drops only its own entry and shows up as an error; the
+rest of the footer still renders.
 
 ```jsonc
 {
   "package": "opencode-pillbox-statusline",
   "options": {
+    "$schema": "https://raw.githubusercontent.com/crag-h4k/opencode-pillbox-statusline/main/schema.json",
+    "preset": "default",
     "pills": {
       "cost": { "enabled": false },
-      "git": { "order": 15, "maxWidth": 24 }
+      "git": { "order": 15, "maxWidth": 24, "dirtyAccent": ["hue.yellow", "feedback.warning"] }
     }
   }
 }
 ```
+
+[`schema.json`](schema.json) describes every key for editors and agents.
+
+| Key | Purpose |
+| --- | --- |
+| `preset` | `default` or `minimal` (project, Git, context, and provider quota) |
+| `icons` | `nerd`, `nerd-bmp` (no glyphs above U+FFFF), `unicode`, or `ascii` |
+| `style` | `surface` (pill background), `caps` (`round`, `angled`, `square`, or `flat`; a style the icon set cannot draw falls back to `flat`), `gap` |
+| `layout` | `reserve` (columns kept for the editor file name) and `hysteresis` |
+| `sources` | `usage.refresh`, and `tiers.enabled` and `tiers.refresh` for GitHub Copilot model categories |
+| `pills.<id>` | `enabled`, `when`, `group`, `order`, `priority`, `attach`, `size`, `minSize`, `minColumns`, `maxWidth`, `icon`, `accent`, `value`, plus the pill's own settings |
+
+Pills: `hint`, `project`, `git`, `spinner`, `identity`, `elapsed`, `subagents`,
+`sidequest` (off by default), `context`, `cost`, `tier`, and `provider`.
+
+### Colors
+
+Colors are tokens resolved against the active OpenCode theme, so pillbox has no
+palette of its own. A setting can list several tokens; the first opaque color
+wins.
+
+| Token | Resolves to |
+| --- | --- |
+| `text.base`, `text.muted` | Theme text colors |
+| `feedback.error`, `.warning`, `.success`, `.info` | Theme feedback colors |
+| `hue.<name>` or `hue.<name>.<step>` | A hue scale; no step means 200 in dark mode and 300 in light |
+| `categorical.<n>` | A categorical theme color |
+| `agent` | The active agent's configured color |
+| Any other dot path | For example `diff.background.context` |
+| `#rrggbb` | A fixed color, for themes without a match |
+
+Themes converted from the V1 format name their hues by angle, so `hue.yellow`
+may be missing or another color. The defaults use only `text.*`, `feedback.*`,
+`hue.accent`, `hue.interactive`, and `agent`, which every theme defines.
+
+### Layout
+
+Each pill starts at its preferred size. While the footer is too wide, the
+lowest-priority pill that can still shrink steps down one size (full, compact,
+icon, hidden). Ties go to the pill with the higher `order`. A pill with
+`attach` hides together with that pill, and `minColumns` hides a pill below a
+terminal width. A pill only grows back once `hysteresis` spare columns are free.
 
 ## Development
 
@@ -88,16 +133,26 @@ prek run --all-files
 | markdownlint-cli2 | Markdown, configured in `.markdownlint.yaml` |
 | biome-ci | TypeScript and JavaScript lint rules, configured in `biome.jsonc`; read-only, with the formatter off |
 | typecheck, test | `tsc --noEmit` and the `node:test` suites |
+| schema | `schema.json` matches the options schema; run `npm run schema` to regenerate it |
 
 CI runs the same hooks from `.github/workflows/ci.yaml`, which calls the reusable
 `.github/workflows/prek.yaml`.
 
 | File | Role |
 | --- | --- |
+| `config/schema.mjs` | Options schema; validates options and generates `schema.json` |
+| `config/defaults.mjs` | Built-in defaults and presets |
+| `config/resolve.mjs` | Merges defaults, preset, and options; reports and drops invalid entries |
+| `config/types.mjs` | Shared schema pieces: color tokens and sizes |
+| `pills/` | One module per pill with its defaults and own settings; `index.mjs` registers them |
+| `theme.mjs` | Color token resolution against the OpenCode theme |
+| `layout.mjs` | Pill anatomy and the priority fit |
+| `icons.mjs` | Icon sets (`nerd`, `nerd-bmp`, `unicode`, `ascii`), cap styles, and safe fallbacks |
 | `width.mjs` | Terminal cell widths that match OpenTUI, cleaning, and truncation |
 | `usage.mjs` | Provider quota parsing, normalization, and summaries |
 | `activity.mjs` | Spinner frames and foreground and subagent activity |
-| `test/` | `node:test` suites, including OpenTUI render checks |
+| `scripts/schema.mjs` | Writes `schema.json`; `--check` fails when it is stale |
+| `test/` | `node:test` suites, including OpenTUI render checks and real theme fixtures |
 
 ## License
 

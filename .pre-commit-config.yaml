@@ -57,4 +57,11 @@ repos:
         entry: npm test
         language: system
         pass_filenames: false
-        files: ^(.*\.(ts|tsx|mjs)|package(-lock)?\.json)$
+        files: ^(.*\.(ts|tsx|mjs|json)|package(-lock)?\.json)$
+
+      - id: schema
+        name: schema.json matches the options schema
+        entry: node scripts/schema.mjs --check
+        language: system
+        pass_filenames: false
+        files: ^(config/.*\.mjs|pills/.*\.mjs|theme\.mjs|scripts/schema\.mjs|schema\.json)$

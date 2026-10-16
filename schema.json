@@ -1,0 +1,2049 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/crag-h4k/opencode-pillbox-statusline/main/schema.json",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "preset": {
+      "type": "string",
+      "enum": [
+        "default",
+        "minimal"
+      ],
+      "description": "Starting point before your overrides"
+    },
+    "icons": {
+      "type": "string",
+      "enum": [
+        "nerd",
+        "nerd-bmp",
+        "unicode",
+        "ascii"
+      ],
+      "description": "Icon set: nerd, nerd-bmp (no glyphs above U+FFFF), unicode, or ascii"
+    },
+    "style": {
+      "type": "object",
+      "properties": {
+        "surface": {
+          "anyOf": [
+            {
+              "type": "string",
+              "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "string",
+                  "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                }
+              ],
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+              }
+            }
+          ],
+          "description": "Pill background; the first opaque color wins"
+        },
+        "caps": {
+          "type": "string",
+          "enum": [
+            "round",
+            "angled",
+            "square",
+            "flat",
+            "none"
+          ],
+          "description": "Pill edges: round, angled, square, or flat (none). A style the icon set cannot draw falls back to flat"
+        },
+        "gap": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4,
+          "description": "Columns between pills"
+        }
+      },
+      "additionalProperties": false
+    },
+    "layout": {
+      "type": "object",
+      "properties": {
+        "reserve": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 200,
+          "description": "Columns kept free for the editor file name in the session footer"
+        },
+        "hysteresis": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20,
+          "description": "Spare columns needed before a pill grows back"
+        }
+      },
+      "additionalProperties": false
+    },
+    "sources": {
+      "type": "object",
+      "properties": {
+        "usage": {
+          "type": "object",
+          "properties": {
+            "refresh": {
+              "type": "integer",
+              "minimum": 15,
+              "maximum": 3600,
+              "description": "Seconds between provider quota refreshes"
+            }
+          },
+          "additionalProperties": false
+        },
+        "tiers": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Fetch GitHub Copilot model categories; sends VS Code Copilot Chat client headers"
+            },
+            "refresh": {
+              "type": "integer",
+              "minimum": 600,
+              "maximum": 86400,
+              "description": "Seconds between category refreshes"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "pills": {
+      "type": "object",
+      "properties": {
+        "hint": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Show this pill at all"
+            },
+            "when": {
+              "type": "string",
+              "enum": [
+                "session",
+                "home",
+                "always"
+              ],
+              "description": "Which footer shows it: the session prompt, the home screen, or both"
+            },
+            "group": {
+              "type": "string",
+              "enum": [
+                "left",
+                "right"
+              ],
+              "description": "Alignment group; right is flush to the edge"
+            },
+            "order": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000,
+              "description": "Position inside the group, low to high"
+            },
+            "priority": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Higher survives longer when space runs out"
+            },
+            "attach": {
+              "type": "string",
+              "enum": [
+                "hint",
+                "project",
+                "git",
+                "spinner",
+                "identity",
+                "elapsed",
+                "subagents",
+                "sidequest",
+                "context",
+                "cost",
+                "tier",
+                "provider"
+              ],
+              "description": "Show and hide together with this pill"
+            },
+            "size": {
+              "type": "string",
+              "enum": [
+                "full",
+                "compact",
+                "icon"
+              ],
+              "description": "Preferred size"
+            },
+            "minSize": {
+              "type": "string",
+              "enum": [
+                "full",
+                "compact",
+                "icon",
+                "hidden"
+              ],
+              "description": "Smallest size the fit may use; hidden lets it disappear"
+            },
+            "minColumns": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000,
+              "description": "Hide below this terminal width"
+            },
+            "maxWidth": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "description": "Truncate the value to this many cells"
+            },
+            "icon": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Replaces the icon from the icon set"
+            },
+            "accent": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string",
+                      "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                    }
+                  ],
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                  }
+                }
+              ],
+              "description": "Icon color"
+            },
+            "value": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string",
+                      "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                    }
+                  ],
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                  }
+                }
+              ],
+              "description": "Text color"
+            }
+          },
+          "additionalProperties": false,
+          "title": "Interrupt and shell-mode hint"
+        },
+        "project": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Show this pill at all"
+            },
+            "when": {
+              "type": "string",
+              "enum": [
+                "session",
+                "home",
+                "always"
+              ],
+              "description": "Which footer shows it: the session prompt, the home screen, or both"
+            },
+            "group": {
+              "type": "string",
+              "enum": [
+                "left",
+                "right"
+              ],
+              "description": "Alignment group; right is flush to the edge"
+            },
+            "order": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000,
+              "description": "Position inside the group, low to high"
+            },
+            "priority": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Higher survives longer when space runs out"
+            },
+            "attach": {
+              "type": "string",
+              "enum": [
+                "hint",
+                "project",
+                "git",
+                "spinner",
+                "identity",
+                "elapsed",
+                "subagents",
+                "sidequest",
+                "context",
+                "cost",
+                "tier",
+                "provider"
+              ],
+              "description": "Show and hide together with this pill"
+            },
+            "size": {
+              "type": "string",
+              "enum": [
+                "full",
+                "compact",
+                "icon"
+              ],
+              "description": "Preferred size"
+            },
+            "minSize": {
+              "type": "string",
+              "enum": [
+                "full",
+                "compact",
+                "icon",
+                "hidden"
+              ],
+              "description": "Smallest size the fit may use; hidden lets it disappear"
+            },
+            "minColumns": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000,
+              "description": "Hide below this terminal width"
+            },
+            "maxWidth": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "description": "Truncate the value to this many cells"
+            },
+            "icon": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Replaces the icon from the icon set"
+            },
+            "accent": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string",
+                      "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                    }
+                  ],
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                  }
+                }
+              ],
+              "description": "Icon color"
+            },
+            "value": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string",
+                      "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                    }
+                  ],
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                  }
+                }
+              ],
+              "description": "Text color"
+            }
+          },
+          "additionalProperties": false,
+          "title": "Project"
+        },
+        "git": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Show this pill at all"
+            },
+            "when": {
+              "type": "string",
+              "enum": [
+                "session",
+                "home",
+                "always"
+              ],
+              "description": "Which footer shows it: the session prompt, the home screen, or both"
+            },
+            "group": {
+              "type": "string",
+              "enum": [
+                "left",
+                "right"
+              ],
+              "description": "Alignment group; right is flush to the edge"
+            },
+            "order": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000,
+              "description": "Position inside the group, low to high"
+            },
+            "priority": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Higher survives longer when space runs out"
+            },
+            "attach": {
+              "type": "string",
+              "enum": [
+                "hint",
+                "project",
+                "git",
+                "spinner",
+                "identity",
+                "elapsed",
+                "subagents",
+                "sidequest",
+                "context",
+                "cost",
+                "tier",
+                "provider"
+              ],
+              "description": "Show and hide together with this pill"
+            },
+            "size": {
+              "type": "string",
+              "enum": [
+                "full",
+                "compact",
+                "icon"
+              ],
+              "description": "Preferred size"
+            },
+            "minSize": {
+              "type": "string",
+              "enum": [
+                "full",
+                "compact",
+                "icon",
+                "hidden"
+              ],
+              "description": "Smallest size the fit may use; hidden lets it disappear"
+            },
+            "minColumns": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000,
+              "description": "Hide below this terminal width"
+            },
+            "maxWidth": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "description": "Truncate the value to this many cells"
+            },
+            "icon": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Replaces the icon from the icon set"
+            },
+            "accent": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string",
+                      "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                    }
+                  ],
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                  }
+                }
+              ],
+              "description": "Icon color"
+            },
+            "value": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string",
+                      "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                    }
+                  ],
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                  }
+                }
+              ],
+              "description": "Text color"
+            },
+            "dirtyAccent": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string",
+                      "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                    }
+                  ],
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                  }
+                }
+              ],
+              "description": "Icon color while the worktree has changes"
+            }
+          },
+          "additionalProperties": false,
+          "title": "Git branch and changes"
+        },
+        "spinner": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Show this pill at all"
+            },
+            "when": {
+              "type": "string",
+              "enum": [
+                "session",
+                "home",
+                "always"
+              ],
+              "description": "Which footer shows it: the session prompt, the home screen, or both"
+            },
+            "group": {
+              "type": "string",
+              "enum": [
+                "left",
+                "right"
+              ],
+              "description": "Alignment group; right is flush to the edge"
+            },
+            "order": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000,
+              "description": "Position inside the group, low to high"
+            },
+            "priority": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Higher survives longer when space runs out"
+            },
+            "attach": {
+              "type": "string",
+              "enum": [
+                "hint",
+                "project",
+                "git",
+                "spinner",
+                "identity",
+                "elapsed",
+                "subagents",
+                "sidequest",
+                "context",
+                "cost",
+                "tier",
+                "provider"
+              ],
+              "description": "Show and hide together with this pill"
+            },
+            "size": {
+              "type": "string",
+              "enum": [
+                "full",
+                "compact",
+                "icon"
+              ],
+              "description": "Preferred size"
+            },
+            "minSize": {
+              "type": "string",
+              "enum": [
+                "full",
+                "compact",
+                "icon",
+                "hidden"
+              ],
+              "description": "Smallest size the fit may use; hidden lets it disappear"
+            },
+            "minColumns": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000,
+              "description": "Hide below this terminal width"
+            },
+            "maxWidth": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "description": "Truncate the value to this many cells"
+            },
+            "icon": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Replaces the icon from the icon set"
+            },
+            "accent": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string",
+                      "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                    }
+                  ],
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                  }
+                }
+              ],
+              "description": "Icon color"
+            },
+            "value": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string",
+                      "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                    }
+                  ],
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                  }
+                }
+              ],
+              "description": "Text color"
+            }
+          },
+          "additionalProperties": false,
+          "title": "Foreground activity spinner"
+        },
+        "identity": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Show this pill at all"
+            },
+            "when": {
+              "type": "string",
+              "enum": [
+                "session",
+                "home",
+                "always"
+              ],
+              "description": "Which footer shows it: the session prompt, the home screen, or both"
+            },
+            "group": {
+              "type": "string",
+              "enum": [
+                "left",
+                "right"
+              ],
+              "description": "Alignment group; right is flush to the edge"
+            },
+            "order": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000,
+              "description": "Position inside the group, low to high"
+            },
+            "priority": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Higher survives longer when space runs out"
+            },
+            "attach": {
+              "type": "string",
+              "enum": [
+                "hint",
+                "project",
+                "git",
+                "spinner",
+                "identity",
+                "elapsed",
+                "subagents",
+                "sidequest",
+                "context",
+                "cost",
+                "tier",
+                "provider"
+              ],
+              "description": "Show and hide together with this pill"
+            },
+            "size": {
+              "type": "string",
+              "enum": [
+                "full",
+                "compact",
+                "icon"
+              ],
+              "description": "Preferred size"
+            },
+            "minSize": {
+              "type": "string",
+              "enum": [
+                "full",
+                "compact",
+                "icon",
+                "hidden"
+              ],
+              "description": "Smallest size the fit may use; hidden lets it disappear"
+            },
+            "minColumns": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000,
+              "description": "Hide below this terminal width"
+            },
+            "maxWidth": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "description": "Truncate the value to this many cells"
+            },
+            "icon": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Replaces the icon from the icon set"
+            },
+            "accent": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string",
+                      "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                    }
+                  ],
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                  }
+                }
+              ],
+              "description": "Icon color"
+            },
+            "value": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string",
+                      "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                    }
+                  ],
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                  }
+                }
+              ],
+              "description": "Text color"
+            },
+            "agentColor": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string",
+                      "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                    }
+                  ],
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                  }
+                }
+              ],
+              "description": "Color of the agent name; `agent` uses the agent's configured color"
+            },
+            "effortColor": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string",
+                      "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                    }
+                  ],
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                  }
+                }
+              ],
+              "description": "Color of the effort variant"
+            },
+            "showEffort": {
+              "type": "boolean",
+              "description": "Show the effort variant in the full size"
+            }
+          },
+          "additionalProperties": false,
+          "title": "Agent, model, and effort"
+        },
+        "elapsed": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Show this pill at all"
+            },
+            "when": {
+              "type": "string",
+              "enum": [
+                "session",
+                "home",
+                "always"
+              ],
+              "description": "Which footer shows it: the session prompt, the home screen, or both"
+            },
+            "group": {
+              "type": "string",
+              "enum": [
+                "left",
+                "right"
+              ],
+              "description": "Alignment group; right is flush to the edge"
+            },
+            "order": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000,
+              "description": "Position inside the group, low to high"
+            },
+            "priority": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Higher survives longer when space runs out"
+            },
+            "attach": {
+              "type": "string",
+              "enum": [
+                "hint",
+                "project",
+                "git",
+                "spinner",
+                "identity",
+                "elapsed",
+                "subagents",
+                "sidequest",
+                "context",
+                "cost",
+                "tier",
+                "provider"
+              ],
+              "description": "Show and hide together with this pill"
+            },
+            "size": {
+              "type": "string",
+              "enum": [
+                "full",
+                "compact",
+                "icon"
+              ],
+              "description": "Preferred size"
+            },
+            "minSize": {
+              "type": "string",
+              "enum": [
+                "full",
+                "compact",
+                "icon",
+                "hidden"
+              ],
+              "description": "Smallest size the fit may use; hidden lets it disappear"
+            },
+            "minColumns": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000,
+              "description": "Hide below this terminal width"
+            },
+            "maxWidth": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "description": "Truncate the value to this many cells"
+            },
+            "icon": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Replaces the icon from the icon set"
+            },
+            "accent": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string",
+                      "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                    }
+                  ],
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                  }
+                }
+              ],
+              "description": "Icon color"
+            },
+            "value": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string",
+                      "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                    }
+                  ],
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                  }
+                }
+              ],
+              "description": "Text color"
+            }
+          },
+          "additionalProperties": false,
+          "title": "Session age"
+        },
+        "subagents": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Show this pill at all"
+            },
+            "when": {
+              "type": "string",
+              "enum": [
+                "session",
+                "home",
+                "always"
+              ],
+              "description": "Which footer shows it: the session prompt, the home screen, or both"
+            },
+            "group": {
+              "type": "string",
+              "enum": [
+                "left",
+                "right"
+              ],
+              "description": "Alignment group; right is flush to the edge"
+            },
+            "order": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000,
+              "description": "Position inside the group, low to high"
+            },
+            "priority": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Higher survives longer when space runs out"
+            },
+            "attach": {
+              "type": "string",
+              "enum": [
+                "hint",
+                "project",
+                "git",
+                "spinner",
+                "identity",
+                "elapsed",
+                "subagents",
+                "sidequest",
+                "context",
+                "cost",
+                "tier",
+                "provider"
+              ],
+              "description": "Show and hide together with this pill"
+            },
+            "size": {
+              "type": "string",
+              "enum": [
+                "full",
+                "compact",
+                "icon"
+              ],
+              "description": "Preferred size"
+            },
+            "minSize": {
+              "type": "string",
+              "enum": [
+                "full",
+                "compact",
+                "icon",
+                "hidden"
+              ],
+              "description": "Smallest size the fit may use; hidden lets it disappear"
+            },
+            "minColumns": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000,
+              "description": "Hide below this terminal width"
+            },
+            "maxWidth": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "description": "Truncate the value to this many cells"
+            },
+            "icon": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Replaces the icon from the icon set"
+            },
+            "accent": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string",
+                      "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                    }
+                  ],
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                  }
+                }
+              ],
+              "description": "Icon color"
+            },
+            "value": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string",
+                      "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                    }
+                  ],
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                  }
+                }
+              ],
+              "description": "Text color"
+            }
+          },
+          "additionalProperties": false,
+          "title": "Subagent activity"
+        },
+        "sidequest": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Show this pill at all"
+            },
+            "when": {
+              "type": "string",
+              "enum": [
+                "session",
+                "home",
+                "always"
+              ],
+              "description": "Which footer shows it: the session prompt, the home screen, or both"
+            },
+            "group": {
+              "type": "string",
+              "enum": [
+                "left",
+                "right"
+              ],
+              "description": "Alignment group; right is flush to the edge"
+            },
+            "order": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000,
+              "description": "Position inside the group, low to high"
+            },
+            "priority": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Higher survives longer when space runs out"
+            },
+            "attach": {
+              "type": "string",
+              "enum": [
+                "hint",
+                "project",
+                "git",
+                "spinner",
+                "identity",
+                "elapsed",
+                "subagents",
+                "sidequest",
+                "context",
+                "cost",
+                "tier",
+                "provider"
+              ],
+              "description": "Show and hide together with this pill"
+            },
+            "size": {
+              "type": "string",
+              "enum": [
+                "full",
+                "compact",
+                "icon"
+              ],
+              "description": "Preferred size"
+            },
+            "minSize": {
+              "type": "string",
+              "enum": [
+                "full",
+                "compact",
+                "icon",
+                "hidden"
+              ],
+              "description": "Smallest size the fit may use; hidden lets it disappear"
+            },
+            "minColumns": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000,
+              "description": "Hide below this terminal width"
+            },
+            "maxWidth": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "description": "Truncate the value to this many cells"
+            },
+            "icon": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Replaces the icon from the icon set"
+            },
+            "accent": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string",
+                      "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                    }
+                  ],
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                  }
+                }
+              ],
+              "description": "Icon color"
+            },
+            "value": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string",
+                      "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                    }
+                  ],
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                  }
+                }
+              ],
+              "description": "Text color"
+            }
+          },
+          "additionalProperties": false,
+          "title": "Sidequest DAG progress"
+        },
+        "context": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Show this pill at all"
+            },
+            "when": {
+              "type": "string",
+              "enum": [
+                "session",
+                "home",
+                "always"
+              ],
+              "description": "Which footer shows it: the session prompt, the home screen, or both"
+            },
+            "group": {
+              "type": "string",
+              "enum": [
+                "left",
+                "right"
+              ],
+              "description": "Alignment group; right is flush to the edge"
+            },
+            "order": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000,
+              "description": "Position inside the group, low to high"
+            },
+            "priority": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Higher survives longer when space runs out"
+            },
+            "attach": {
+              "type": "string",
+              "enum": [
+                "hint",
+                "project",
+                "git",
+                "spinner",
+                "identity",
+                "elapsed",
+                "subagents",
+                "sidequest",
+                "context",
+                "cost",
+                "tier",
+                "provider"
+              ],
+              "description": "Show and hide together with this pill"
+            },
+            "size": {
+              "type": "string",
+              "enum": [
+                "full",
+                "compact",
+                "icon"
+              ],
+              "description": "Preferred size"
+            },
+            "minSize": {
+              "type": "string",
+              "enum": [
+                "full",
+                "compact",
+                "icon",
+                "hidden"
+              ],
+              "description": "Smallest size the fit may use; hidden lets it disappear"
+            },
+            "minColumns": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000,
+              "description": "Hide below this terminal width"
+            },
+            "maxWidth": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "description": "Truncate the value to this many cells"
+            },
+            "icon": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Replaces the icon from the icon set"
+            },
+            "accent": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string",
+                      "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                    }
+                  ],
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                  }
+                }
+              ],
+              "description": "Icon color"
+            },
+            "value": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string",
+                      "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                    }
+                  ],
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                  }
+                }
+              ],
+              "description": "Text color"
+            }
+          },
+          "additionalProperties": false,
+          "title": "Context usage"
+        },
+        "cost": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Show this pill at all"
+            },
+            "when": {
+              "type": "string",
+              "enum": [
+                "session",
+                "home",
+                "always"
+              ],
+              "description": "Which footer shows it: the session prompt, the home screen, or both"
+            },
+            "group": {
+              "type": "string",
+              "enum": [
+                "left",
+                "right"
+              ],
+              "description": "Alignment group; right is flush to the edge"
+            },
+            "order": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000,
+              "description": "Position inside the group, low to high"
+            },
+            "priority": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Higher survives longer when space runs out"
+            },
+            "attach": {
+              "type": "string",
+              "enum": [
+                "hint",
+                "project",
+                "git",
+                "spinner",
+                "identity",
+                "elapsed",
+                "subagents",
+                "sidequest",
+                "context",
+                "cost",
+                "tier",
+                "provider"
+              ],
+              "description": "Show and hide together with this pill"
+            },
+            "size": {
+              "type": "string",
+              "enum": [
+                "full",
+                "compact",
+                "icon"
+              ],
+              "description": "Preferred size"
+            },
+            "minSize": {
+              "type": "string",
+              "enum": [
+                "full",
+                "compact",
+                "icon",
+                "hidden"
+              ],
+              "description": "Smallest size the fit may use; hidden lets it disappear"
+            },
+            "minColumns": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000,
+              "description": "Hide below this terminal width"
+            },
+            "maxWidth": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "description": "Truncate the value to this many cells"
+            },
+            "icon": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Replaces the icon from the icon set"
+            },
+            "accent": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string",
+                      "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                    }
+                  ],
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                  }
+                }
+              ],
+              "description": "Icon color"
+            },
+            "value": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string",
+                      "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                    }
+                  ],
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                  }
+                }
+              ],
+              "description": "Text color"
+            }
+          },
+          "additionalProperties": false,
+          "title": "Session cost"
+        },
+        "tier": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Show this pill at all"
+            },
+            "when": {
+              "type": "string",
+              "enum": [
+                "session",
+                "home",
+                "always"
+              ],
+              "description": "Which footer shows it: the session prompt, the home screen, or both"
+            },
+            "group": {
+              "type": "string",
+              "enum": [
+                "left",
+                "right"
+              ],
+              "description": "Alignment group; right is flush to the edge"
+            },
+            "order": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000,
+              "description": "Position inside the group, low to high"
+            },
+            "priority": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Higher survives longer when space runs out"
+            },
+            "attach": {
+              "type": "string",
+              "enum": [
+                "hint",
+                "project",
+                "git",
+                "spinner",
+                "identity",
+                "elapsed",
+                "subagents",
+                "sidequest",
+                "context",
+                "cost",
+                "tier",
+                "provider"
+              ],
+              "description": "Show and hide together with this pill"
+            },
+            "size": {
+              "type": "string",
+              "enum": [
+                "full",
+                "compact",
+                "icon"
+              ],
+              "description": "Preferred size"
+            },
+            "minSize": {
+              "type": "string",
+              "enum": [
+                "full",
+                "compact",
+                "icon",
+                "hidden"
+              ],
+              "description": "Smallest size the fit may use; hidden lets it disappear"
+            },
+            "minColumns": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000,
+              "description": "Hide below this terminal width"
+            },
+            "maxWidth": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "description": "Truncate the value to this many cells"
+            },
+            "icon": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Replaces the icon from the icon set"
+            },
+            "accent": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string",
+                      "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                    }
+                  ],
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                  }
+                }
+              ],
+              "description": "Icon color"
+            },
+            "value": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string",
+                      "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                    }
+                  ],
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                  }
+                }
+              ],
+              "description": "Text color"
+            },
+            "ramp": {
+              "type": "string",
+              "enum": [
+                "value",
+                "heat"
+              ],
+              "description": "Icon ramp: value (circle to sack) or heat (snowflake to fire)"
+            },
+            "bands": {
+              "type": "object",
+              "properties": {
+                "included": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                    },
+                    {
+                      "type": "array",
+                      "prefixItems": [
+                        {
+                          "type": "string",
+                          "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                        }
+                      ],
+                      "minItems": 1,
+                      "items": {
+                        "type": "string",
+                        "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                      }
+                    }
+                  ]
+                },
+                "standard": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                    },
+                    {
+                      "type": "array",
+                      "prefixItems": [
+                        {
+                          "type": "string",
+                          "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                        }
+                      ],
+                      "minItems": 1,
+                      "items": {
+                        "type": "string",
+                        "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                      }
+                    }
+                  ]
+                },
+                "premium": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                    },
+                    {
+                      "type": "array",
+                      "prefixItems": [
+                        {
+                          "type": "string",
+                          "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                        }
+                      ],
+                      "minItems": 1,
+                      "items": {
+                        "type": "string",
+                        "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                      }
+                    }
+                  ]
+                },
+                "heavy": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                    },
+                    {
+                      "type": "array",
+                      "prefixItems": [
+                        {
+                          "type": "string",
+                          "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                        }
+                      ],
+                      "minItems": 1,
+                      "items": {
+                        "type": "string",
+                        "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                      }
+                    }
+                  ]
+                }
+              },
+              "additionalProperties": false,
+              "description": "Color per tier band"
+            }
+          },
+          "additionalProperties": false,
+          "title": "Model tier"
+        },
+        "provider": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Show this pill at all"
+            },
+            "when": {
+              "type": "string",
+              "enum": [
+                "session",
+                "home",
+                "always"
+              ],
+              "description": "Which footer shows it: the session prompt, the home screen, or both"
+            },
+            "group": {
+              "type": "string",
+              "enum": [
+                "left",
+                "right"
+              ],
+              "description": "Alignment group; right is flush to the edge"
+            },
+            "order": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000,
+              "description": "Position inside the group, low to high"
+            },
+            "priority": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Higher survives longer when space runs out"
+            },
+            "attach": {
+              "type": "string",
+              "enum": [
+                "hint",
+                "project",
+                "git",
+                "spinner",
+                "identity",
+                "elapsed",
+                "subagents",
+                "sidequest",
+                "context",
+                "cost",
+                "tier",
+                "provider"
+              ],
+              "description": "Show and hide together with this pill"
+            },
+            "size": {
+              "type": "string",
+              "enum": [
+                "full",
+                "compact",
+                "icon"
+              ],
+              "description": "Preferred size"
+            },
+            "minSize": {
+              "type": "string",
+              "enum": [
+                "full",
+                "compact",
+                "icon",
+                "hidden"
+              ],
+              "description": "Smallest size the fit may use; hidden lets it disappear"
+            },
+            "minColumns": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000,
+              "description": "Hide below this terminal width"
+            },
+            "maxWidth": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "description": "Truncate the value to this many cells"
+            },
+            "icon": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Replaces the icon from the icon set"
+            },
+            "accent": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string",
+                      "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                    }
+                  ],
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                  }
+                }
+              ],
+              "description": "Icon color"
+            },
+            "value": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string",
+                      "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                    }
+                  ],
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                  }
+                }
+              ],
+              "description": "Text color"
+            },
+            "warnAt": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Used percentage that switches to the warning color"
+            },
+            "errorAt": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Used percentage that switches to the error color"
+            },
+            "warning": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string",
+                      "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                    }
+                  ],
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                  }
+                }
+              ],
+              "description": "Color at or above warnAt"
+            },
+            "error": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string",
+                      "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                    }
+                  ],
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "description": "Theme color token: text.base, feedback.warning, hue.accent, hue.cyan.200, categorical.0, agent, or #rrggbb"
+                  }
+                }
+              ],
+              "description": "Color at or above errorAt"
+            }
+          },
+          "additionalProperties": false,
+          "title": "Provider quota"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "title": "opencode-pillbox-statusline options",
+  "description": "Options for the pillbox entry in OpenCode's cli.json plugins list"
+}
