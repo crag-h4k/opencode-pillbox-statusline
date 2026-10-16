@@ -7,4 +7,9 @@ export default {
   sizes: ["full"],
   plain: true,
   defaults: { when: "session", order: 0, priority: 100, accent: "text.muted", value: "text.muted" },
+  render(data) {
+    if (data.mode === "shell") return { sizes: { full: "esc exit shell mode" } }
+    if (data.status === "running") return { sizes: { full: `${data.interrupt || "esc"} interrupt` } }
+    return undefined
+  },
 }

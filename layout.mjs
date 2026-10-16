@@ -11,19 +11,38 @@ const LADDER = Object.freeze([...SIZES, "hidden"])
 
 /**
  * The text runs that make up one pill. The renderer colors each run by its
- * role; the fit measures the same runs, so the two never disagree.
- * @param {{ icon?: string, text?: string, size: string, caps?: { left: string, right: string } }} pill
- * @returns {{ role: "cap" | "pad" | "icon" | "text", text: string }[]}
+ * role; the fit measures the same runs, so the two never disagree. `text` is a
+ * string or a list of runs, each with an optional color token that overrides
+ * the pill's value color.
+ * @param {{
+ *   icon?: string,
+ *   text?: string | { text: string, color?: string | readonly string[] }[],
+ *   size: string,
+ *   caps?: { left: string, right: string },
+ *   plain?: boolean,
+ * }} pill
+ * @returns {{ role: "cap" | "pad" | "icon" | "text", text: string, color?: string | readonly string[] }[]}
  */
-export function pillParts({ icon = "", text = "", size, caps = { left: "", right: "" } }) {
+export function pillParts({ icon = "", text = "", size, caps = { left: "", right: "" }, plain = false }) {
+  const runs = (typeof text === "string" ? [{ text }] : text).filter((run) => run.text)
+  const showText = size !== "icon" && runs.length > 0
   const parts = []
-  if (caps.left) parts.push({ role: "cap", text: caps.left })
-  if (icon) {
-    parts.push({ role: "pad", text: " " }, { role: "icon", text: icon })
+  if (plain) {
+    // No surface to pad: the icon, one space before any text, then the text.
+    if (icon) parts.push({ role: "icon", text: icon })
+    if (icon && showText) parts.push({ role: "pad", text: " " })
+  } else {
+    if (caps.left) parts.push({ role: "cap", text: caps.left })
+    if (icon) parts.push({ role: "pad", text: " " }, { role: "icon", text: icon })
+    if (showText) parts.push({ role: "pad", text: " " })
   }
-  if (size !== "icon" && text) parts.push({ role: "pad", text: " " }, { role: "text", text })
-  parts.push({ role: "pad", text: " " })
-  if (caps.right) parts.push({ role: "cap", text: caps.right })
+  if (showText) {
+    for (const run of runs) parts.push(run.color ? { role: "text", text: run.text, color: run.color } : { role: "text", text: run.text })
+  }
+  if (!plain) {
+    parts.push({ role: "pad", text: " " })
+    if (caps.right) parts.push({ role: "cap", text: caps.right })
+  }
   return parts
 }
 

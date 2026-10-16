@@ -168,8 +168,19 @@ function repair(config, errors) {
 }
 
 /**
+ * @typedef {{
+ *   preset: string,
+ *   icons: string,
+ *   style: { surface: string | string[], caps: string, gap: number },
+ *   layout: { reserve: number, hysteresis: number },
+ *   sources: { usage: { refresh: number }, tiers: { enabled: boolean, refresh: number } },
+ *   pills: Record<string, Record<string, any>>,
+ * }} PillboxConfig
+ */
+
+/**
  * @param {unknown} options  the `options` object from the cli.json plugin entry
- * @returns {{ config: object, errors: { path: string, message: string }[] }}
+ * @returns {{ config: PillboxConfig, errors: { path: string, message: string }[] }}
  */
 export function resolveConfig(options) {
   const errors = []
