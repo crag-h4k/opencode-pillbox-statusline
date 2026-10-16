@@ -13,7 +13,9 @@ import { barModel } from "./bar.mjs"
 import { resolveConfig } from "./config/resolve.mjs"
 import { basename, contextUsage } from "./format.mjs"
 import { sizesOf } from "./layout.mjs"
+import { Tiers, type TiersResult, Usage, type UsageResult } from "./rpc.ts"
 import { agentColor, resolveColor } from "./theme.mjs"
+import { freshUsage } from "./usage.mjs"
 
 type Context = ReturnType<typeof usePlugin>
 type Location = ReturnType<Context["data"]["location"]["default"]>
@@ -135,6 +137,7 @@ export default Plugin.define({
     void context.data.location.vcs.sync(location)
     void context.data.location.agent.sync(location)
     void context.data.location.model.sync(location)
+    void context.data.location.provider.sync(location)
     void context.data.project.sync()
     void refreshGit()
     const clock = setInterval(() => setNow(Date.now()), 30_000)
@@ -143,6 +146,45 @@ export default Plugin.define({
       void context.data.location.vcs.sync(location)
       scheduleGit()
     })
+
+    // Quota and model tiers come from the server half. Without it the calls
+    // fail quietly and the provider pill stays hidden. Each call times out,
+    // and a new one waits until the previous call has settled.
+    const usageRpc = context.client.rpc(Usage)
+    const tiersRpc = context.client.rpc(Tiers)
+    const [usage, setUsage] = createSignal<UsageResult["providers"]>({})
+    const [tiers, setTiers] = createSignal<TiersResult["models"]>({})
+    const timers: ReturnType<typeof setInterval>[] = []
+    const busy = new Set<string>()
+    async function poll(name: string, call: () => Promise<void>) {
+      if (busy.has(name)) return
+      busy.add(name)
+      try {
+        await call()
+      } catch {
+        // keep the last figures; freshUsage drops them once they are stale
+      } finally {
+        busy.delete(name)
+      }
+    }
+    const refreshUsage = () =>
+      poll("usage", async () => {
+        const result = (await usageRpc.get({}, { signal: AbortSignal.timeout(15_000) })) as UsageResult
+        setUsage(result?.providers && typeof result.providers === "object" ? result.providers : {})
+      })
+    const refreshTiers = () =>
+      poll("tiers", async () => {
+        const result = (await tiersRpc.get({}, { signal: AbortSignal.timeout(15_000) })) as TiersResult
+        setTiers(result?.models && typeof result.models === "object" ? result.models : {})
+      })
+    if (config.pills.provider.enabled) {
+      void refreshUsage()
+      timers.push(setInterval(() => void refreshUsage(), config.sources.usage.refresh * 1000))
+    }
+    if (config.pills.tier.enabled) {
+      void refreshTiers()
+      timers.push(setInterval(() => void refreshTiers(), config.sources.tiers.refresh * 1000))
+    }
 
     const branch = () => context.data.location.vcs.info(location)?.branch.current
     const gitData = () => {
@@ -205,6 +247,16 @@ export default Plugin.define({
         const modelRef = active?.model
         const info = modelRef ? models.find((item) => item.providerID === modelRef.providerID && item.id === modelRef.id) : undefined
         const output = info?.cost?.[0]?.output
+        const providerID = modelRef?.providerID
+        const providerName = providerID
+          ? context.data.location.provider.list(active?.location ?? location)?.find((item) => item.id === providerID)?.name
+          : undefined
+        const ownTiers = tiers()
+        const category = providerID === "github-copilot" && modelRef && Object.hasOwn(ownTiers, modelRef.id)
+          ? ownTiers[modelRef.id]
+          : undefined
+        const ownUsage = usage()
+        const providerUsage = providerID && Object.hasOwn(ownUsage, providerID) ? ownUsage[providerID] : undefined
         const data = {
           mode: props.mode,
           status: current?.status,
@@ -227,7 +279,10 @@ export default Plugin.define({
               })
             : undefined,
           cost: id ? context.data.session.cost(id) : undefined,
-          tier: typeof output === "number" ? { outputCost: output } : undefined,
+          tier: category || typeof output === "number" ? { category, outputCost: output } : undefined,
+          provider: providerID
+            ? { id: providerID, name: providerName ?? providerID, ...freshUsage(providerUsage, now()) }
+            : undefined,
         }
         const result = barModel(config, data, {
           bar: "session",
@@ -286,6 +341,7 @@ export default Plugin.define({
     return () => {
       if (gitTimer) clearTimeout(gitTimer)
       clearInterval(clock)
+      for (const timer of timers) clearInterval(timer)
       stopFiles()
       stopBranch()
       sessionSlot()

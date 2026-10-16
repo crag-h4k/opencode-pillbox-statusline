@@ -23,6 +23,11 @@ user's `cli.json` entry; the server half takes no options and answers RPC calls.
 - Every change to a pill or to layout needs a test that covers it at the widths
   it affects.
 - RPC output never contains credentials, account ids, or raw provider responses.
+- Every outbound request uses `redirect: "error"` and a timeout, and goes only to
+  the hosts listed in the README's "Data sources and privacy" table. Adding a
+  host or a request means updating that table and `test/server.test.mjs`.
+- Requests that impersonate another client stay behind the server's `tiers`
+  option and are documented as such.
 - Use `.yaml`, not `.yml`. No em dashes in code, comments, or docs.
 - Update `README.md` when a file is added or its role changes.
 

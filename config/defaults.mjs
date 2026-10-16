@@ -22,10 +22,10 @@ export const ROOT_DEFAULTS = Object.freeze({
     caps: "round",
     gap: 1,
   },
-  layout: { reserve: 30, hysteresis: 2 },
+  layout: { reserve: 0, hysteresis: 2 },
   sources: {
     usage: { refresh: 60 },
-    tiers: { enabled: false, refresh: 21600 },
+    tiers: { refresh: 21600 },
   },
 })
 

@@ -21,16 +21,22 @@
     "node": ">=26.4.0"
   },
   "exports": {
-    "./tui": "./tui.tsx"
+    ".": "./index.ts",
+    "./tui": "./tui.tsx",
+    "./rpc": "./rpc.ts"
   },
   "files": [
-    "*.mjs",
+    "index.ts",
     "tui.tsx",
+    "rpc.ts",
+    "*.mjs",
     "config/",
     "pills/",
+    "server/",
     "schema.json",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md"
   ],
   "scripts": {
     "test": "node --disable-warning=ExperimentalWarning --test test/",

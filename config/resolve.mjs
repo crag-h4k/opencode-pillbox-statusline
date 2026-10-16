@@ -173,7 +173,7 @@ function repair(config, errors) {
  *   icons: string,
  *   style: { surface: string | string[], caps: string, gap: number },
  *   layout: { reserve: number, hysteresis: number },
- *   sources: { usage: { refresh: number }, tiers: { enabled: boolean, refresh: number } },
+ *   sources: { usage: { refresh: number }, tiers: { refresh: number } },
  *   pills: Record<string, Record<string, any>>,
  * }} PillboxConfig
  */
