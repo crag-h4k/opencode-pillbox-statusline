@@ -9,8 +9,8 @@ import {
   ICON_SETS,
   iconSet,
   iconSetName,
-} from "../icons.mjs"
-import { displayWidth } from "../width.mjs"
+} from "../src/render/icons.mjs"
+import { displayWidth } from "../src/render/width.mjs"
 
 const SCALAR_KEYS = ["project", "git", "identity", "elapsed", "subagentQueued", "context", "cost", "provider", "limit"]
 const TIER_BANDS = ["included", "standard", "premium", "heavy"]

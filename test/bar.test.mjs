@@ -1,10 +1,10 @@
 // test/bar.test.mjs
 import assert from "node:assert/strict"
 import test from "node:test"
-import { barModel } from "../bar.mjs"
-import { resolveConfig } from "../config/resolve.mjs"
-import { contextUsage, duration, priceBand } from "../format.mjs"
-import { partsWidth } from "../layout.mjs"
+import { barModel } from "../src/render/bar.mjs"
+import { resolveConfig } from "../src/config/resolve.mjs"
+import { contextUsage, duration, priceBand } from "../src/render/format.mjs"
+import { partsWidth } from "../src/render/layout.mjs"
 
 // Today's footer state from the dotfiles docs capture, as a snapshot.
 const SNAPSHOT = {

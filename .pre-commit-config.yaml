@@ -64,4 +64,4 @@ repos:
         entry: node scripts/schema.mjs --check
         language: system
         pass_filenames: false
-        files: ^(config/.*\.mjs|pills/.*\.mjs|theme\.mjs|scripts/schema\.mjs|schema\.json)$
+        files: ^(src/config/.*\.mjs|src/pills/.*\.mjs|src/render/(theme|icons)\.mjs|scripts/schema\.mjs|schema\.json)$

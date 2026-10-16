@@ -2,8 +2,8 @@
 import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
 import test from "node:test"
-import { resolveConfig } from "../config/resolve.mjs"
-import { agentColor, isOpaque, isValidToken, resolveColor, resolveToken, toHex } from "../theme.mjs"
+import { resolveConfig } from "../src/config/resolve.mjs"
+import { agentColor, isOpaque, isValidToken, resolveColor, resolveToken, toHex } from "../src/render/theme.mjs"
 
 const rgba = (hex, a = 1) => ({
   r: Number.parseInt(hex.slice(1, 3), 16) / 255,

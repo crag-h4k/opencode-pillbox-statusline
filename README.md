@@ -17,7 +17,8 @@ Developed against OpenCode 2.0.29 and its plugin API.
 
 ## Install
 
-The package is not published yet. Load it from a checkout by absolute path.
+The package is not published yet. Load it from a checkout by the absolute path
+of its `src` directory.
 OpenCode passes `opencode.jsonc` options only to a plugin's server half, so
 pillbox is registered twice: once in `opencode.jsonc` for the server half, which
 fetches quota, and once in `cli.json` with the options for the terminal half.
@@ -26,7 +27,7 @@ fetches quota, and once in `cli.json` with the options for the terminal half.
 // ~/.config/opencode/opencode.jsonc
 {
   "plugins": [
-    { "package": "/absolute/path/to/opencode-pillbox-statusline", "options": { "tiers": false } }
+    { "package": "/absolute/path/to/opencode-pillbox-statusline/src", "options": { "tiers": false } }
   ]
 }
 ```
@@ -39,7 +40,7 @@ The server half's only option is `tiers`; see
 {
   "plugins": [
     "-opencode.prompt.footer",
-    { "package": "/absolute/path/to/opencode-pillbox-statusline", "options": {} }
+    { "package": "/absolute/path/to/opencode-pillbox-statusline/src", "options": {} }
   ]
 }
 ```
@@ -185,27 +186,26 @@ prek run --all-files
 CI runs the same hooks from `.github/workflows/ci.yaml`, which calls the reusable
 `.github/workflows/prek.yaml`.
 
-| File | Role |
-| --- | --- |
-| `config/schema.mjs` | Options schema; validates options and generates `schema.json` |
-| `config/defaults.mjs` | Built-in defaults and presets |
-| `config/resolve.mjs` | Merges defaults, preset, and options; reports and drops invalid entries |
-| `config/types.mjs` | Shared schema pieces: color tokens and sizes |
-| `pills/` | One module per pill with its defaults and own settings; `index.mjs` registers them |
-| `theme.mjs` | Color token resolution against the OpenCode theme |
-| `layout.mjs` | Pill anatomy and the priority fit |
-| `bar.mjs` | Renders the enabled pills from a data snapshot and fits them into one bar |
-| `format.mjs` | Durations, money, compact numbers, context usage, and tier bands |
-| `tui.tsx` | Terminal half: builds the snapshot from OpenCode state, measures, resolves colors, draws both footers |
-| `index.ts` | Server half: registers the `pillbox.usage` and `pillbox.tiers` RPCs |
-| `rpc.ts` | RPC contracts shared by both halves |
-| `server/` | Quota (`usage.mjs`), Copilot model categories (`tiers.mjs`), and Copilot helpers (`copilot.mjs`) |
-| `icons.mjs` | Icon sets (`nerd`, `nerd-bmp`, `unicode`, `ascii`), cap styles, and safe fallbacks |
-| `width.mjs` | Terminal cell widths that match OpenTUI, cleaning, and truncation |
-| `usage.mjs` | Provider quota parsing, normalization, staleness, and summaries |
-| `activity.mjs` | Spinner frames and foreground and subagent activity |
-| `scripts/schema.mjs` | Writes `schema.json`; `--check` fails when it is stale |
-| `test/` | `node:test` suites, including OpenTUI render checks and real theme fixtures |
+The source lives in `src/`; everything at the top level is configuration, docs,
+or tooling. A checkout loads from `src/`, which holds the `index`, `tui`, and
+`rpc` entry points OpenCode looks for; the npm package maps the same files
+through `package.json` exports.
+
+```text
+opencode-pillbox-statusline/
+  src/
+    index.ts            Server half: registers the pillbox.usage and pillbox.tiers RPCs
+    tui.tsx             Terminal half: builds the data snapshot, measures, draws both footers
+    rpc.ts              RPC contracts shared by both halves
+    quota.mjs           Quota parsing, normalization, and staleness shared by both halves
+    config/             Options schema, defaults and presets, and the resolver
+    pills/              One module per pill: defaults, own settings, and render
+    render/             Bar model, priority fit, theme tokens, icons, widths, formatting
+    server/             Quota and Copilot model-category sources
+  test/                 node:test suites, OpenTUI render checks, real theme fixtures
+  scripts/schema.mjs    Writes schema.json; --check fails when it is stale
+  schema.json           JSON Schema for the terminal half's options
+```
 
 ## License
 

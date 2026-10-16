@@ -1,7 +1,7 @@
 // test/width.test.mjs
 import assert from "node:assert/strict"
 import test from "node:test"
-import { clean, displayWidth, fit } from "../width.mjs"
+import { clean, displayWidth, fit } from "../src/render/width.mjs"
 
 // Footer glyphs plus known narrow, wide, and zero-width references.
 const SAMPLES = {
