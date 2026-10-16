@@ -3,6 +3,7 @@
 // only the agent icon.
 import { Schema } from "effect"
 import { Color } from "../config/types.mjs"
+import { fit } from "../width.mjs"
 
 export default {
   id: "identity",
@@ -21,5 +22,17 @@ export default {
     agentColor: "agent",
     effortColor: "feedback.warning",
     showEffort: true,
+  },
+  render(data, settings, icons) {
+    if (!data.agent) return undefined
+    const agent = { text: fit(data.agent, 12), color: settings.agentColor }
+    const model = data.model ? [{ text: ` \u00b7 ${fit(data.model, settings.maxWidth)}` }] : []
+    const effort = settings.showEffort && data.variant
+      ? [{ text: ` \u00b7 ${fit(data.variant, 10)}`, color: settings.effortColor }]
+      : []
+    return {
+      icon: icons.identity,
+      sizes: { full: [agent, ...model, ...effort], compact: [agent, ...model], icon: "" },
+    }
   },
 }

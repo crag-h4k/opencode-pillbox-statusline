@@ -14,6 +14,9 @@ test("pill anatomy matches today's footer: caps, padded icon, text, trailing pad
   assert.equal(partsWidth(pillParts({ icon: "X", text: "main", size: "icon", caps: CAPS })), 5)
   assert.equal(partsWidth(pillParts({ icon: "X", text: "main", size: "full" })), 8)
   assert.equal(partsWidth(pillParts({ text: "esc interrupt", size: "full" })), 15)
+  assert.equal(partsWidth(pillParts({ text: "esc interrupt", size: "full", plain: true })), 13)
+  assert.deepEqual(pillParts({ icon: "X", size: "icon", plain: true }).map((part) => part.text), ["X"])
+  assert.deepEqual(pillParts({ icon: "X", text: "run", size: "full", plain: true }).map((part) => part.text), ["X", " ", "run"])
   assert.equal(partsWidth(pillParts({ icon: "\u{F024B}", text: "\u4E2D", size: "full", caps: CAPS })), 8)
 })
 
@@ -98,7 +101,7 @@ function sessionPills() {
     const plain = id === "hint" || id === "spinner"
     const widths = Object.fromEntries(Object.entries(texts).map(([size, text]) => [
       size,
-      partsWidth(pillParts({ icon: id === "hint" ? "" : "X", text, size, caps: plain ? undefined : CAPS })),
+      partsWidth(pillParts({ icon: id === "hint" ? "" : "X", text, size, caps: CAPS, plain })),
     ]))
     return { id, ...settings, widths }
   })

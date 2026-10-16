@@ -41,6 +41,12 @@ once in `cli.json` with the options for the terminal half.
 Run `npm install` in the checkout first, the same as `opencode-sidequest`. The
 terminal reloads plugins when their files change.
 
+Pillbox replaces the `prompt.footer.status` slot and adds to
+`home.footer.status`. When two plugins replace the same slot, the one enabled
+last wins, so disable any other footer plugin with a `-<plugin id>` entry in
+the same `plugins` list. `-opencode.prompt.footer` also removes OpenCode's
+command-palette hint.
+
 ## Configuration
 
 Options are keyed by pill id, so an override names only what changes. Lists
@@ -147,6 +153,9 @@ CI runs the same hooks from `.github/workflows/ci.yaml`, which calls the reusabl
 | `pills/` | One module per pill with its defaults and own settings; `index.mjs` registers them |
 | `theme.mjs` | Color token resolution against the OpenCode theme |
 | `layout.mjs` | Pill anatomy and the priority fit |
+| `bar.mjs` | Renders the enabled pills from a data snapshot and fits them into one bar |
+| `format.mjs` | Durations, money, compact numbers, context usage, and tier bands |
+| `tui.tsx` | Terminal half: builds the snapshot from OpenCode state, measures, resolves colors, draws both footers |
 | `icons.mjs` | Icon sets (`nerd`, `nerd-bmp`, `unicode`, `ascii`), cap styles, and safe fallbacks |
 | `width.mjs` | Terminal cell widths that match OpenTUI, cleaning, and truncation |
 | `usage.mjs` | Provider quota parsing, normalization, and summaries |

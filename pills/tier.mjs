@@ -3,6 +3,7 @@
 // tiers source is on, else a band from the model's catalog output price.
 import { Schema } from "effect"
 import { Color } from "../config/types.mjs"
+import { categoryBand, priceBand, TIER_LABELS } from "../format.mjs"
 
 export default {
   id: "tier",
@@ -28,5 +29,17 @@ export default {
       premium: "feedback.warning",
       heavy: "feedback.error",
     },
+  },
+  render(data, settings, icons) {
+    const tier = data.tier
+    if (!tier) return undefined
+    const band = (tier.category && categoryBand(tier.category, tier.outputCost))
+      ?? (typeof tier.outputCost === "number" ? priceBand(tier.outputCost) : undefined)
+    if (!band) return undefined
+    return {
+      icon: icons.tier[settings.ramp]?.[band] ?? icons.tier.value[band],
+      accent: settings.bands[band],
+      sizes: { full: TIER_LABELS[band], icon: "" },
+    }
   },
 }

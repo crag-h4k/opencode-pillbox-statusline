@@ -28,13 +28,18 @@ user's `cli.json` entry; the server half takes no options and answers RPC calls.
 
 ## Adding or changing a pill
 
-1. Create `pills/<id>.mjs` exporting `id`, `title`, `sizes`, `defaults`, and,
-   for settings of its own, `options` (effect schemas, each with a default in
-   `defaults`).
-2. Register it in `pills/index.mjs`.
+1. Create `pills/<id>.mjs` exporting `id`, `title`, `sizes`, `defaults`,
+   `render`, and, for settings of its own, `options` (effect schemas, each with
+   a default in `defaults`). `render(data, settings, icons)` is pure: it reads
+   the data snapshot documented at the top of `bar.mjs` and returns
+   `{ icon, sizes: { full, compact, icon }, accent? }`, or `undefined` to hide
+   the pill. A size's text is a string or a list of `{ text, color }` runs.
+   Set `plain: true` for a pill drawn without a surface or caps.
+2. Register it in `pills/index.mjs`. If it needs new data, add the field to the
+   snapshot in `tui.tsx` and document it in `bar.mjs`.
 3. Run `npm run schema` so `schema.json` picks it up.
-4. Add tests: `test/config.test.mjs` checks the registry, and layout changes
-   belong in `test/layout.test.mjs`.
+4. Add tests: `test/pills.test.mjs` for the render, `test/bar.test.mjs` for
+   how it fits in a bar, and `test/config.test.mjs` checks the registry.
 
 Changing anything in `config/` also needs `npm run schema`; the `schema` hook
 and a test fail when `schema.json` is stale.
