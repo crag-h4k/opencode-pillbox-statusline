@@ -49,6 +49,11 @@ package are public.
 A trusted publisher can only be configured for a package that already exists,
 so the first version is published by hand and carries no provenance.
 
+`initial-version` in `.github/release-please/config.json` sets the first release
+to `0.1.0`. The bootstrap manifest's `0.0.0` is not a published release and does
+not override Release Please's default initial version on its own. After the
+first release, version bumps follow Conventional Commits.
+
 1. Merge the Release Please PR for `0.1.0`. The publish job skips because
    `NPM_TRUSTED_PUBLISHING` is not set.
 2. Publish the tag from a clean checkout:
