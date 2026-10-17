@@ -49,6 +49,16 @@ user's `cli.json` entry; the server half takes no options and answers RPC calls.
 Changing anything in `src/config/` also needs `npm run schema`; the `schema` hook
 and a test fail when `schema.json` is stale.
 
+## Branches, commits, and releases
+
+- Work on a feature branch named for its Conventional Commit type (`feat/`,
+  `fix/`, `ci/`, `docs/`, `chore/`, `refactor/`) and merge through a PR.
+- Commit messages follow Conventional Commits: Release Please derives the
+  version and `CHANGELOG.md` from them. Never edit `CHANGELOG.md`, the version
+  in `package.json`, or `.github/release-please/manifest.json` by hand.
+- The publish job in `ci.yaml` is registered with npm trusted publishing by its
+  file name. Do not move it into a reusable workflow. See `RELEASING.md`.
+
 ## Commands
 
 ```sh
