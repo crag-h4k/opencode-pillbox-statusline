@@ -1,6 +1,6 @@
 {
   "name": "opencode-pillbox-statusline",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Config-driven footer statusline for OpenCode V2: themed pills for project, Git, agent, context, cost, and provider quota",
   "type": "module",
   "license": "MIT",
