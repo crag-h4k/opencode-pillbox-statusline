@@ -1,0 +1,19 @@
+# Changelog
+
+## 0.1.0 (2026-10-17)
+
+
+### Features
+
+* add config schema, theme tokens, priority layout, and icon sets ([1f60624](https://github.com/crag-h4k/opencode-pillbox-statusline/commit/1f60624a7ba91d37726a65adc71b8a07e7326346))
+* add pillbox diagnostics and configuration docs ([#6](https://github.com/crag-h4k/opencode-pillbox-statusline/issues/6)) ([8240a53](https://github.com/crag-h4k/opencode-pillbox-statusline/commit/8240a533a09f3e8dbf332f1725c949d1cbbe973c))
+* add width, usage, and activity modules with prek and CI ([77c48be](https://github.com/crag-h4k/opencode-pillbox-statusline/commit/77c48bea96bb3b80058eb2efb90cfb3a45f5cf30))
+* render pills and draw the session and home footers ([5d6d9c5](https://github.com/crag-h4k/opencode-pillbox-statusline/commit/5d6d9c5e3aa491fb32ee31b622e0637c28d5a34e))
+* render pills and draw the session and home footers ([c53dfef](https://github.com/crag-h4k/opencode-pillbox-statusline/commit/c53dfefca30306e4847d01d1b249ee417fb27264))
+* **server:** report Copilot, Codex, Claude, and gateway quota over RPC ([bef2e56](https://github.com/crag-h4k/opencode-pillbox-statusline/commit/bef2e56d76e6278e90b6621ae61c6ea7388e9080))
+* **server:** report Copilot, Codex, Claude, and gateway quota over RPC ([5a80472](https://github.com/crag-h4k/opencode-pillbox-statusline/commit/5a8047295fc2d901657ced65707619b02fa1b0d3))
+
+
+### Bug Fixes
+
+* **release:** start at 0.1.0 ([0a30f5f](https://github.com/crag-h4k/opencode-pillbox-statusline/commit/0a30f5f43caeffd8654616b7842fb2d2fcbc18cc))
