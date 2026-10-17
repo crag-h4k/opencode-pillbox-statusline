@@ -1,7 +1,8 @@
 # Releasing
 
-How a pillbox version reaches npm. Releases come from Release Please and npm
-trusted publishing; no npm token exists in CI.
+How a pillbox version reaches npm. Version `0.1.0` is published. Release Please
+creates GitHub releases; the npm trusted-publishing job is implemented but remains
+disabled until setup is complete. No npm token exists in CI.
 
 ## Table of Contents
 
@@ -46,26 +47,15 @@ package are public.
 
 ## First release
 
-A trusted publisher can only be configured for a package that already exists,
-so the first version is published by hand and carries no provenance.
+Version `0.1.0` was published from the `v0.1.0` tag after typechecking, tests,
+tarball inspection, and an isolated OpenCode load check. This initial publication
+used maintainer authentication and has no CI provenance.
 
-`initial-version` in `.github/release-please/config.json` sets the first release
-to `0.1.0`. The bootstrap manifest's `0.0.0` is not a published release and does
-not override Release Please's default initial version on its own. After the
-first release, version bumps follow Conventional Commits.
+The release manifest now records `0.1.0`. Subsequent version bumps follow
+Conventional Commits. Keep `NPM_TRUSTED_PUBLISHING` unset until the following
+setup is completed for the next release:
 
-1. Merge the Release Please PR for `0.1.0`. The publish job skips because
-   `NPM_TRUSTED_PUBLISHING` is not set.
-2. Publish the tag from a clean checkout:
-
-   ```sh
-   git switch --detach v0.1.0
-   npm ci --ignore-scripts
-   npm test
-   npm publish
-   ```
-
-3. Configure trusted publishing right before the next release. A new trusted
+1. Configure trusted publishing right before the next release. A new trusted
    publisher expires unless it publishes within 2 days.
 
    ```sh
@@ -73,14 +63,14 @@ first release, version bumps follow Conventional Commits.
      --file ci.yaml --env npm --allow-staged-publish
    ```
 
-4. On npmjs.com, set the package's publishing access to "Require two-factor
+2. On npmjs.com, set the package's publishing access to "Require two-factor
    authentication and disallow tokens".
-5. Set the repository variable `NPM_TRUSTED_PUBLISHING` to `true`.
+3. Set the repository variable `NPM_TRUSTED_PUBLISHING` to `true`.
 
 ## Every later release
 
 1. Merge the Release Please PR.
-2. Wait for the `publish` job in the tag's CI run.
+2. Wait for the `publish` job in the main-push CI run that creates the release.
 3. Review the staged version with `npm stage list opencode-pillbox-statusline`
    or the Staged Packages tab on npmjs.com, then approve it with 2FA
    (`npm stage approve <stage-id>`).

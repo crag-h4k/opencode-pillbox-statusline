@@ -19,9 +19,9 @@ Developed against OpenCode 2.0.29 and its plugin API.
 
 ## Install
 
-Pillbox is pre-release and is not published to npm yet. Use
-[a checkout](#from-a-checkout) for now. The `@0.1.0` examples below describe the
-intended npm setup after publication.
+Install [Pillbox from npm](https://www.npmjs.com/package/opencode-pillbox-statusline)
+by adding the pinned package to your OpenCode configuration below. OpenCode
+installs it automatically. For local development, use [a checkout](#from-a-checkout).
 
 OpenCode passes `opencode.jsonc` options only to a plugin's server half, so
 pillbox is registered twice: once in `opencode.jsonc` for the server half, which
