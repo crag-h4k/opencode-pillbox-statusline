@@ -14,9 +14,14 @@ Developed against OpenCode 2.0.29 and its plugin API.
 - [Diagnostics](#diagnostics)
 - [Data sources and privacy](#data-sources-and-privacy)
 - [Development](#development)
+- [Related projects](#related-projects)
 - [License](#license)
 
 ## Install
+
+Pillbox is pre-release and is not published to npm yet. Use
+[a checkout](#from-a-checkout) for now. The `@0.1.0` examples below describe the
+intended npm setup after publication.
 
 OpenCode passes `opencode.jsonc` options only to a plugin's server half, so
 pillbox is registered twice: once in `opencode.jsonc` for the server half, which
@@ -241,6 +246,17 @@ opencode-pillbox-statusline/
   docs/pills.md         Pill defaults, supported sizes, visibility, and specific settings
   RELEASING.md          How versions reach npm
 ```
+
+## Related projects
+
+- [opencode-sidequest](https://github.com/crag-h4k/opencode-sidequest) runs
+  dependency graphs of sub-agent tasks with a live side panel. Pillbox's optional
+  `sidequest` pill shows run progress; it is off by default.
+- [dotfiles](https://github.com/crag-h4k/dotfiles) manages a selective macOS and
+  Debian workstation with chezmoi, shared terminal palettes, and OpenCode tooling.
+
+Pillbox works independently of both projects. You can use it with your own
+OpenCode configuration.
 
 ## License
 
