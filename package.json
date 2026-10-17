@@ -29,6 +29,7 @@
   },
   "files": [
     "src/",
+    "docs/",
     "schema.json",
     "README.md",
     "LICENSE",
@@ -38,7 +39,7 @@
     "access": "public"
   },
   "scripts": {
-    "test": "node --disable-warning=ExperimentalWarning --test test/",
+    "test": "node --experimental-ffi --disable-warning=ExperimentalWarning --test \"test/*.test.mjs\"",
     "typecheck": "tsc --noEmit",
     "schema": "node scripts/schema.mjs"
   },

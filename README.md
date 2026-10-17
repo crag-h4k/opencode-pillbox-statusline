@@ -11,6 +11,7 @@ Developed against OpenCode 2.0.29 and its plugin API.
 
 - [Install](#install)
 - [Configuration](#configuration)
+- [Diagnostics](#diagnostics)
 - [Data sources and privacy](#data-sources-and-privacy)
 - [Development](#development)
 - [License](#license)
@@ -25,6 +26,7 @@ Pin the same exact version in both.
 ```jsonc
 // ~/.config/opencode/opencode.jsonc
 {
+  "$schema": "https://opencode.ai/config.json",
   "plugins": [
     { "package": "opencode-pillbox-statusline@0.1.0", "options": { "tiers": false } }
   ]
@@ -37,6 +39,7 @@ The server half's only option is `tiers`; see
 ```jsonc
 // ~/.config/opencode/cli.json
 {
+  "$schema": "https://opencode.ai/v2/cli.json",
   "plugins": [
     "-opencode.prompt.footer",
     { "package": "opencode-pillbox-statusline@0.1.0", "options": {} }
@@ -78,7 +81,10 @@ rest of the footer still renders.
 }
 ```
 
-[`schema.json`](schema.json) describes every key for editors and agents.
+[`schema.json`](schema.json) describes the terminal options object for editors
+and agents. See [Configuration](docs/config.md) for schema association, complete
+defaults, validation behavior, and source settings, and [Pills](docs/pills.md)
+for each pill's sizes, visibility rules, and specific options.
 
 | Key | Purpose |
 | --- | --- |
@@ -120,10 +126,25 @@ icon, hidden). Ties go to the pill with the higher `order`. A pill with
 `attach` hides together with that pill, and `minColumns` hides a pill below a
 terminal width. A pill only grows back once `hysteresis` spare columns are free.
 
+## Diagnostics
+
+Run `/pillbox` or choose **Pillbox diagnostics** in the command palette. The
+dialog has four sections: actual layout widths and hide reasons, sanitized
+usage and tiers source states, resolved options and errors, and a glyph width
+check. Use 1-4 to switch sections, arrows or Page Up/Down to scroll, and Escape
+to close. No default keybinding is installed.
+
+Layout uses the displayed footer's fit, including hysteresis, rather than a
+second estimate. The glyph check shows code points and cell-width rulers for
+the chosen icon set and custom overrides; compare the rulers in your terminal
+to find missing or overlapping glyphs. See the
+[diagnostics reference](docs/config.md#diagnostics) for state and hide-reason
+definitions.
+
 ## Data sources and privacy
 
 The server half reads your provider logins through OpenCode's integration API
-and returns only quota figures to the terminal half: never tokens, account
+and returns quota figures and source status to the terminal half: never tokens, account
 ids, or raw responses. Every request has a 10-second timeout and refuses
 redirects. Each provider is queried at most once a minute.
 
@@ -136,8 +157,10 @@ redirects. Each provider is queried at most once a minute.
 | Copilot model categories | Your account's `*.githubcopilot.com/models` (Enterprise: `copilot-api.<your host>`) | Only with `tiers: true` |
 
 All of these endpoints are undocumented and can change without notice. The
-pills show "unavailable" or disappear rather than display stale figures, which
-are dropped after five minutes.
+pills show "unavailable" or disappear rather than display stale quota figures,
+which are dropped after five minutes. Model categories keep their last good
+map for the same account; diagnostics mark it stale after the six-hour cache
+expires.
 
 When the server option `tiers` is `true`, pillbox calls GitHub Copilot's
 undocumented `/models` endpoint with your Copilot token and identifies as the
@@ -164,7 +187,8 @@ npm run typecheck
 ```
 
 The tests need Node 26.4 or newer: the render tests draw real frames with
-OpenTUI, whose Node build uses `node:ffi`.
+OpenTUI, whose Node build uses `node:ffi`. The test script enables experimental
+FFI explicitly and selects the test files by glob.
 
 Linting and the other checks run through [prek](https://prek.j178.dev/), locally on
 every commit and in CI. The type check and the tests are hooks too, so run
@@ -202,6 +226,8 @@ opencode-pillbox-statusline/
   src/
     index.ts            Server half: registers the pillbox.usage and pillbox.tiers RPCs
     tui.tsx             Terminal half: builds the data snapshot, measures, draws both footers
+    diagnostics.tsx     Scrollable /pillbox dialog with layout, sources, options, and glyph sections
+    diagnostics.mjs     Pure diagnostic reports and glyph samples; reads the displayed fit
     rpc.ts              RPC contracts shared by both halves
     quota.mjs           Quota parsing, normalization, and staleness shared by both halves
     config/             Options schema, defaults and presets, and the resolver
@@ -211,6 +237,8 @@ opencode-pillbox-statusline/
   test/                 node:test suites, OpenTUI render checks, real theme fixtures
   scripts/schema.mjs    Writes schema.json; --check fails when it is stale
   schema.json           JSON Schema for the terminal half's options
+  docs/config.md        Options, schema setup, source states, and diagnostics reference
+  docs/pills.md         Pill defaults, supported sizes, visibility, and specific settings
   RELEASING.md          How versions reach npm
 ```
 

@@ -6,7 +6,8 @@ Contract for coding agents working in this repository.
 
 `opencode-pillbox-statusline` is an OpenCode V2 plugin that renders the footer
 as a row of configurable pills. The terminal half reads its options from the
-user's `cli.json` entry; the server half takes no options and answers RPC calls.
+user's `cli.json` entry; the server half takes only the `tiers` option and
+answers RPC calls.
 
 ## Rules
 

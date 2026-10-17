@@ -58,7 +58,11 @@ export const Tiers = Rpc.define({
       input: EMPTY,
       output: {
         type: "object",
-        properties: { models: { type: "object", additionalProperties: { type: "string" } } },
+        properties: {
+          models: { type: "object", additionalProperties: { type: "string" } },
+          state: { type: "string", enum: ["disabled", "unavailable", "ready", "stale"] },
+          updatedAt: { type: "number" },
+        },
         required: ["models"],
         additionalProperties: false,
       },
@@ -74,4 +78,8 @@ export type ProviderUsage = {
   windows?: { period: "5h" | "week"; usedPercent: number }[]
 }
 export type UsageResult = { providers: Record<string, ProviderUsage> }
-export type TiersResult = { models: Record<string, string> }
+export type TiersResult = {
+  models: Record<string, string>
+  state?: "disabled" | "unavailable" | "ready" | "stale"
+  updatedAt?: number
+}

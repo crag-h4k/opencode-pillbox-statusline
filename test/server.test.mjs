@@ -157,7 +157,7 @@ test("tiers send editor headers only to the account's Copilot models endpoint an
   })
   const tiers = createTiers({ integration: integration(credentials), enabled: true, fetch, now: () => clock, log: () => {} })
   const result = await tiers.get()
-  assert.deepEqual(result, { models: { "gpt-6-luna": "lightweight", "claude-opus-5.5": "powerful" } })
+  assert.deepEqual(result, { models: { "gpt-6-luna": "lightweight", "claude-opus-5.5": "powerful" }, state: "ready", updatedAt: 1000 })
 
   const [user, models] = calls
   assert.equal(user.options.headers["User-Agent"], "opencode-pillbox-statusline")
@@ -183,11 +183,11 @@ test("tiers ignore a Copilot API host outside githubcopilot.com and keep the las
     [`${DEFAULT_COPILOT_API}/models`]: () => (broken ? [500, {}] : [200, { data: [{ id: "m", model_picker_category: "versatile" }] }]),
   })
   const tiers = createTiers({ integration: integration(credentials), enabled: true, fetch, now: () => clock, log: () => {} })
-  assert.deepEqual(await tiers.get(), { models: { m: "versatile" } })
+  assert.deepEqual(await tiers.get(), { models: { m: "versatile" }, state: "ready", updatedAt: 0 })
   assert.ok(!calls.some((call) => call.url.includes("attacker")))
   clock += TIERS_TTL_MS
   broken = true
-  assert.deepEqual(await tiers.get(), { models: { m: "versatile" } })
+  assert.deepEqual(await tiers.get(), { models: { m: "versatile" }, state: "stale", updatedAt: 0 })
 })
 
 test("OpenAI follows the dotfiles rules: an expired or missing token makes no request and reads as unavailable", async () => {
@@ -250,7 +250,7 @@ test("tiers make no request unless the server option enables them", async () => 
   const { fetch, calls } = fakeFetch({})
   const credentials = { "github-copilot": { credential: { type: "oauth", access: SECRET } } }
   const tiers = createTiers({ integration: integration(credentials), fetch })
-  assert.deepEqual(await tiers.get(), { models: {} })
+  assert.deepEqual(await tiers.get(), { models: {}, state: "disabled" })
   assert.equal(calls.length, 0)
 })
 
@@ -279,8 +279,19 @@ test("tiers back off after a failure, share one request between callers, and res
   assert.equal(calls.length, 2, "backing off after the failure")
   clock += FAILURE_BACKOFF_MS
   ok = true
-  assert.deepEqual(await tiers.get(), { models: { m: "powerful" } })
+  assert.deepEqual(await tiers.get(), { models: { m: "powerful" }, state: "ready", updatedAt: FAILURE_BACKOFF_MS })
   credentials["github-copilot"].connection = "b"
   ok = false
-  assert.deepEqual(await tiers.get(), { models: {} }, "the previous account's map is dropped")
+  assert.deepEqual(await tiers.get(), { models: {}, state: "unavailable" }, "the previous account's map is dropped")
+})
+
+test("tiers report unavailable without leaking integration errors or making a request", async () => {
+  const { fetch, calls } = fakeFetch({})
+  for (const integrationApi of [integration({}), {
+    connection: { active: async () => { throw new Error(`failed ${SECRET} ${ACCOUNT}`) } },
+  }]) {
+    const tiers = createTiers({ integration: integrationApi, enabled: true, fetch })
+    assert.deepEqual(await tiers.get(), { models: {}, state: "unavailable" })
+  }
+  assert.equal(calls.length, 0)
 })
