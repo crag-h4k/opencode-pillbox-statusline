@@ -34,18 +34,32 @@ export function barModel(config, data, { bar, budget, columns, previous, flat = 
   const caps = capsFor(flat ? "flat" : config.style.caps, config.icons)
   const rendered = new Map()
   const entries = []
+  const omitted = new Map()
   for (const pill of PILLS) {
     const settings = config.pills[pill.id]
-    if (!settings.enabled || (settings.when !== "always" && settings.when !== bar)) continue
+    if (!settings.enabled) {
+      omitted.set(pill.id, "disabled")
+      continue
+    }
+    if (settings.when !== "always" && settings.when !== bar) {
+      omitted.set(pill.id, "when")
+      continue
+    }
     const output = pill.render(data, settings, icons)
-    if (!output) continue
+    if (!output) {
+      omitted.set(pill.id, "no-data")
+      continue
+    }
     const icon = settings.icon ?? output.icon ?? ""
     const sizes = {}
     for (const size of SIZES) {
       if (!pill.sizes.includes(size) || output.sizes[size] === undefined) continue
       sizes[size] = pillParts({ icon, text: output.sizes[size], size, caps, plain: Boolean(pill.plain) })
     }
-    if (!Object.keys(sizes).length) continue
+    if (!Object.keys(sizes).length) {
+      omitted.set(pill.id, "empty")
+      continue
+    }
     rendered.set(pill.id, { pill, settings, output, sizes })
     entries.push({
       id: pill.id,
@@ -79,5 +93,17 @@ export function barModel(config, data, { bar, budget, columns, previous, flat = 
       parts: sizes[size],
     }
   })
-  return { pills, fit }
+  const diagnostics = PILLS.map(({ id }) => {
+    const placed = fit.placed.find((pill) => pill.id === id)
+    const reason = omitted.get(id) ?? fit.hidden.find((pill) => pill.id === id)?.reason
+    return {
+      id,
+      group: config.pills[id].group,
+      size: placed?.size ?? "hidden",
+      width: placed?.width ?? 0,
+      widths: entries.find((pill) => pill.id === id)?.widths ?? {},
+      reason,
+    }
+  })
+  return { pills, fit, diagnostics, bar, budget, columns, caps: caps.style }
 }

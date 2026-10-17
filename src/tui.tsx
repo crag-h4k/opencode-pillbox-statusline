@@ -16,6 +16,8 @@ import { sizesOf } from "./render/layout.mjs"
 import { Tiers, type TiersResult, Usage, type UsageResult } from "./rpc.ts"
 import { agentColor, resolveColor } from "./render/theme.mjs"
 import { freshUsage } from "./quota.mjs"
+import { glyphReport, layoutReport, optionsReport, sourcesReport } from "./diagnostics.mjs"
+import { Diagnostics } from "./diagnostics.tsx"
 
 type Context = ReturnType<typeof usePlugin>
 type Location = ReturnType<Context["data"]["location"]["default"]>
@@ -25,6 +27,7 @@ type BarPill = Model["pills"][number]
 type Tokens = string | readonly string[] | undefined
 type Paint = (tokens: Tokens) => any
 type GitStats = { files: number; additions: number; deletions: number }
+type PollState = { state: "disabled" | "loading" | "ready" | "error"; succeededAt?: number }
 
 const NO_CHANGES: GitStats = { files: 0, additions: 0, deletions: 0 }
 
@@ -153,16 +156,23 @@ export default Plugin.define({
     const usageRpc = context.client.rpc(Usage)
     const tiersRpc = context.client.rpc(Tiers)
     const [usage, setUsage] = createSignal<UsageResult["providers"]>({})
-    const [tiers, setTiers] = createSignal<TiersResult["models"]>({})
+    const [tiers, setTiers] = createSignal<TiersResult>({ models: {} })
+    const [polling, setPolling] = createSignal<Record<"usage" | "tiers", PollState>>({
+      usage: { state: "disabled" },
+      tiers: { state: "disabled" },
+    })
     const timers: ReturnType<typeof setInterval>[] = []
     const busy = new Set<string>()
-    async function poll(name: string, call: () => Promise<void>) {
+    async function poll(name: "usage" | "tiers", call: () => Promise<void>) {
       if (busy.has(name)) return
       busy.add(name)
+      setPolling((value) => ({ ...value, [name]: { ...value[name], state: "loading" } }))
       try {
         await call()
+        setPolling((value) => ({ ...value, [name]: { state: "ready", succeededAt: Date.now() } }))
       } catch {
         // keep the last figures; freshUsage drops them once they are stale
+        setPolling((value) => ({ ...value, [name]: { ...value[name], state: "error" } }))
       } finally {
         busy.delete(name)
       }
@@ -170,12 +180,14 @@ export default Plugin.define({
     const refreshUsage = () =>
       poll("usage", async () => {
         const result = (await usageRpc.get({}, { signal: AbortSignal.timeout(15_000) })) as UsageResult
-        setUsage(result?.providers && typeof result.providers === "object" ? result.providers : {})
+        if (!result?.providers || typeof result.providers !== "object" || Array.isArray(result.providers)) throw new Error("Invalid usage response")
+        setUsage(result.providers)
       })
     const refreshTiers = () =>
       poll("tiers", async () => {
         const result = (await tiersRpc.get({}, { signal: AbortSignal.timeout(15_000) })) as TiersResult
-        setTiers(result?.models && typeof result.models === "object" ? result.models : {})
+        if (!result?.models || typeof result.models !== "object" || Array.isArray(result.models)) throw new Error("Invalid tiers response")
+        setTiers(result)
       })
     if (config.pills.provider.enabled) {
       void refreshUsage()
@@ -192,6 +204,33 @@ export default Plugin.define({
       return current ? { branch: current, ...git() } : undefined
     }
     const surface = () => resolveColor(context.theme, config.style.surface, { mode: context.themeMode })
+    const bars = new Map<string, () => Model>()
+    const resolvedOptions = optionsReport(config, errors)
+    const glyphs = glyphReport(config)
+    let diagnosticsOpen = false
+    context.keymap.layer(() => ({
+      mode: "global",
+      commands: [{
+        id: "pillbox.diagnostics",
+        title: "Pillbox diagnostics",
+        group: "Pillbox",
+        palette: true,
+        slash: { name: "pillbox" },
+        run: () => {
+          const route = context.ui.router.current()
+          const key = route.type === "session" ? route.sessionID : route.type === "home" ? "home" : undefined
+          context.ui.dialog.show(() => (
+            <Diagnostics sections={[
+              { title: "Layout", text: layoutReport(key ? bars.get(key)?.() : undefined) },
+              { title: "Sources", text: sourcesReport({ usage: usage(), tiers: tiers(), polling: polling(), config, now: Math.max(now(), Date.now()) }) },
+              { title: "Options", text: resolvedOptions },
+              { title: "Glyphs", text: `OpenTUI width method: ${context.renderer.widthMethod}\n${glyphs}` },
+            ]} />
+          ), () => { diagnosticsOpen = false })
+          diagnosticsOpen = true
+        },
+      }],
+    }))
 
     function SessionFooter(props: { sessionID?: string; mode: "normal" | "shell" }) {
       const terminal = useTerminalDimensions()
@@ -251,7 +290,7 @@ export default Plugin.define({
         const providerName = providerID
           ? context.data.location.provider.list(active?.location ?? location)?.find((item) => item.id === providerID)?.name
           : undefined
-        const ownTiers = tiers()
+        const ownTiers = tiers().models
         const category = providerID === "github-copilot" && modelRef && Object.hasOwn(ownTiers, modelRef.id)
           ? ownTiers[modelRef.id]
           : undefined
@@ -295,6 +334,15 @@ export default Plugin.define({
         return result
       })
 
+      createEffect(() => {
+        const id = props.sessionID
+        if (!id) return
+        bars.set(id, model)
+        onCleanup(() => {
+          if (bars.get(id) === model) bars.delete(id)
+        })
+      })
+
       return (
         <Show when={props.sessionID} fallback={<box />}>
           <BarView
@@ -326,6 +374,12 @@ export default Plugin.define({
           },
         ),
       )
+      createEffect(() => {
+        bars.set("home", model)
+        onCleanup(() => {
+          if (bars.get("home") === model) bars.delete("home")
+        })
+      })
       return <BarView model={model()} gap={config.style.gap} paint={paint} surface={surface} grow={false} />
     }
 
@@ -339,6 +393,7 @@ export default Plugin.define({
     })
 
     return () => {
+      if (diagnosticsOpen) context.ui.dialog.clear()
       if (gitTimer) clearTimeout(gitTimer)
       clearInterval(clock)
       for (const timer of timers) clearInterval(timer)

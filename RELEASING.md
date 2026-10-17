@@ -40,8 +40,8 @@ package are public.
 | Step | Done by |
 | --- | --- |
 | Make the repository public, so npm can generate provenance | GitHub settings |
-| Create a fine-grained token limited to this repository with Contents and Pull requests read and write, 90-day expiry | GitHub account settings |
-| Save it as the repository secret `RELEASE_PLEASE_TOKEN`, so CI runs on release PRs | Repository settings |
+| Give the shared fine-grained PAT `release_please_ci` access to this repository with Contents, Pull requests, and Issues read and write | GitHub account settings |
+| Save it as the repository secret `RELEASE_PLEASE_CI`, so CI runs on release PRs | Repository settings |
 | Optional: add protection rules to the `npm` environment, for example a required reviewer | Repository settings |
 
 ## First release
@@ -82,6 +82,6 @@ so the first version is published by hand and carries no provenance.
 
 ## Token rotation
 
-`RELEASE_PLEASE_TOKEN` expires after 90 days. When it does, Release Please
-fails on main pushes. Create a new token with the same scope and replace the
-secret. Nothing else holds a long-lived credential.
+When the shared `release_please_ci` PAT expires or is revoked, Release Please
+fails on main pushes. Create a replacement with the same selected repositories
+and permissions, then update `RELEASE_PLEASE_CI` in every repository using it.

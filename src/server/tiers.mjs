@@ -114,7 +114,7 @@ export function createTiers({ integration, enabled = false, fetch = globalThis.f
 
   return {
     async get() {
-      if (!enabled) return { models: {} }
+      if (!enabled) return { models: {}, state: "disabled" }
       pending ??= refresh().finally(() => {
         pending = undefined
       })
@@ -123,7 +123,12 @@ export function createTiers({ integration, enabled = false, fetch = globalThis.f
       } catch {
         // integration errors leave the current map in place
       }
-      return { models }
+      const available = Object.keys(models).length > 0
+      return {
+        models,
+        state: available ? (now() - fetchedAt < TIERS_TTL_MS ? "ready" : "stale") : "unavailable",
+        ...(available ? { updatedAt: fetchedAt } : {}),
+      }
     },
   }
 }
