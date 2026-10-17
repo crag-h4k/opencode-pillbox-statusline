@@ -1,12 +1,17 @@
 {
   "name": "opencode-pillbox-statusline",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "description": "Config-driven footer statusline for OpenCode V2: themed pills for project, Git, agent, context, cost, and provider quota",
   "type": "module",
   "license": "MIT",
+  "author": "Dane Morgan",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/crag-h4k/opencode-pillbox-statusline.git"
+  },
+  "homepage": "https://github.com/crag-h4k/opencode-pillbox-statusline#readme",
+  "bugs": {
+    "url": "https://github.com/crag-h4k/opencode-pillbox-statusline/issues"
   },
   "keywords": [
     "opencode",
@@ -17,9 +22,6 @@
     "tui",
     "quota"
   ],
-  "engines": {
-    "node": ">=26.4.0"
-  },
   "exports": {
     ".": "./src/index.ts",
     "./tui": "./src/tui.tsx",
@@ -32,6 +34,9 @@
     "LICENSE",
     "THIRD_PARTY_NOTICES.md"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "test": "node --disable-warning=ExperimentalWarning --test test/",
     "typecheck": "tsc --noEmit",
@@ -53,5 +58,12 @@
     "effect": "4.0.1",
     "solid-js": "1.9.12",
     "typescript": "5.9.3"
+  },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": ">=26.4.0",
+      "onFail": "warn"
+    }
   }
 }

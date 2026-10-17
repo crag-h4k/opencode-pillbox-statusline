@@ -2,7 +2,12 @@
 ---
 name: ci
 
-# Both triggers call the same reusable workflow, so there is one prek run per push.
+# Pull requests and pushes to main run the hooks. On main, Release Please then
+# opens or updates the release PR; merging that PR tags the release, and the
+# publish job stages the tagged version on npm for a maintainer to approve.
+#
+# npm trusted publishing is registered against this file name (ci.yaml), so the
+# publish job must stay in this workflow, not in a reusable one.
 on:
   push:
     branches: [main]
@@ -14,3 +19,65 @@ permissions:
 jobs:
   prek:
     uses: ./.github/workflows/prek.yaml
+
+  release-please:
+    name: Release Please
+    needs: prek
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    concurrency:
+      group: release-please
+      cancel-in-progress: false
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - name: Open or update the release PR
+        id: release
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+          config-file: .github/release-please/config.json
+          manifest-file: .github/release-please/manifest.json
+
+  # Stages the release on npm through OIDC trusted publishing: no npm token
+  # exists anywhere. Nothing goes live until a maintainer approves the staged
+  # version with 2FA. The repository variable NPM_TRUSTED_PUBLISHING stays unset
+  # until the trusted publisher is configured on npmjs.com (see RELEASING.md).
+  # No caches: a release build installs from the lockfile only.
+  publish:
+    name: Stage on npm
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true' && vars.NPM_TRUSTED_PUBLISHING == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.release-please.outputs.tag_name }}
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 26
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+
+      # Staged publishing needs npm 11.15.0 or newer.
+      - run: npm install --global npm@11.20.0
+
+      - run: npm ci --ignore-scripts
+
+      - run: npm test
+
+      - name: Stage the release
+        run: npm stage publish

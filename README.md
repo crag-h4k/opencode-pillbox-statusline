@@ -17,17 +17,16 @@ Developed against OpenCode 2.0.29 and its plugin API.
 
 ## Install
 
-The package is not published yet. Load it from a checkout by the absolute path
-of its `src` directory.
 OpenCode passes `opencode.jsonc` options only to a plugin's server half, so
 pillbox is registered twice: once in `opencode.jsonc` for the server half, which
 fetches quota, and once in `cli.json` with the options for the terminal half.
+Pin the same exact version in both.
 
 ```jsonc
 // ~/.config/opencode/opencode.jsonc
 {
   "plugins": [
-    { "package": "/absolute/path/to/opencode-pillbox-statusline/src", "options": { "tiers": false } }
+    { "package": "opencode-pillbox-statusline@0.1.0", "options": { "tiers": false } }
   ]
 }
 ```
@@ -40,19 +39,23 @@ The server half's only option is `tiers`; see
 {
   "plugins": [
     "-opencode.prompt.footer",
-    { "package": "/absolute/path/to/opencode-pillbox-statusline/src", "options": {} }
+    { "package": "opencode-pillbox-statusline@0.1.0", "options": {} }
   ]
 }
 ```
-
-Run `npm install` in the checkout first, the same as `opencode-sidequest`. The
-terminal reloads plugins when their files change.
 
 Pillbox replaces the `prompt.footer.status` slot and adds to
 `home.footer.status`. When two plugins replace the same slot, the one enabled
 last wins, so disable any other footer plugin with a `-<plugin id>` entry in
 the same `plugins` list. `-opencode.prompt.footer` also removes OpenCode's
 command-palette hint.
+
+### From a checkout
+
+Use the absolute path of the checkout's `src` directory in place of the package
+spec in both files, and run `npm install` in the checkout first. OpenCode looks
+for the `index` and `tui` entry points in the directory you register, and the
+terminal reloads plugins when their files change.
 
 ## Configuration
 
@@ -184,7 +187,10 @@ prek run --all-files
 | schema | `schema.json` matches the options schema; run `npm run schema` to regenerate it |
 
 CI runs the same hooks from `.github/workflows/ci.yaml`, which calls the reusable
-`.github/workflows/prek.yaml`.
+`.github/workflows/prek.yaml`. On `main`, the same workflow runs Release Please
+and stages releases on npm; see [RELEASING.md](RELEASING.md). Commit messages
+follow [Conventional Commits](https://www.conventionalcommits.org/), because
+Release Please builds the version and changelog from them.
 
 The source lives in `src/`; everything at the top level is configuration, docs,
 or tooling. A checkout loads from `src/`, which holds the `index`, `tui`, and
@@ -205,6 +211,7 @@ opencode-pillbox-statusline/
   test/                 node:test suites, OpenTUI render checks, real theme fixtures
   scripts/schema.mjs    Writes schema.json; --check fails when it is stale
   schema.json           JSON Schema for the terminal half's options
+  RELEASING.md          How versions reach npm
 ```
 
 ## License
