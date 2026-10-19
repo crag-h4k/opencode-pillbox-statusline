@@ -17,6 +17,13 @@ answers RPC calls.
 - Colors are theme tokens resolved by `theme.mjs`. Never add palette hex values
   as defaults; `#rrggbb` is a user escape hatch only. Defaults use only
   `text.*`, `feedback.*`, `hue.accent`, `hue.interactive`, and `agent`.
+- The terminal half ships compiled. OpenCode applies its Solid transform only to
+  files outside `node_modules`, so an installed package that exports the TSX
+  paints once and never updates. `scripts/build.mjs` compiles `src/tui.tsx` and
+  `src/diagnostics.tsx` into `dist/`, and `exports["./tui"]` names the result.
+  Keep their relative imports as siblings in `src/` (the build rewrites them),
+  and verify a change to the terminal half through an npm install, not only a
+  local path: a path load compiles the TSX and hides this failure.
 - Bind no leader keys. OpenCode reserves `<leader>h/j/k/l` for session
   navigation, and `opencode-sidequest` uses others.
 - Measure text with `src/render/width.mjs`. It must agree with OpenTUI, and
@@ -67,6 +74,7 @@ npm install
 npm test
 npm run typecheck
 npm run schema
+npm run build
 prek run --all-files
 ```
 

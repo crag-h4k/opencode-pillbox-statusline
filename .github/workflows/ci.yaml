@@ -77,6 +77,8 @@ jobs:
 
       - run: npm ci --ignore-scripts
 
+      - run: npm run build
+
       - run: npm test
 
       - name: Stage the release

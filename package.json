@@ -24,11 +24,12 @@
   ],
   "exports": {
     ".": "./src/index.ts",
-    "./tui": "./src/tui.tsx",
+    "./tui": "./dist/tui.js",
     "./rpc": "./src/rpc.ts"
   },
   "files": [
     "src/",
+    "dist/",
     "docs/",
     "schema.json",
     "README.md",
@@ -41,7 +42,9 @@
   "scripts": {
     "test": "node --experimental-ffi --disable-warning=ExperimentalWarning --test \"test/*.test.mjs\"",
     "typecheck": "tsc --noEmit",
-    "schema": "node scripts/schema.mjs"
+    "schema": "node scripts/schema.mjs",
+    "build": "node scripts/build.mjs",
+    "prepack": "npm run build"
   },
   "peerDependencies": {
     "@opencode/plugin": ">=2.0.26",
