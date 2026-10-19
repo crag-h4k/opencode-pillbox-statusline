@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.1](https://github.com/crag-h4k/opencode-pillbox-statusline/compare/v0.1.0...v0.1.1) (2026-10-19)
+
+
+### Bug Fixes
+
+* **quota:** keep figures dated slightly ahead of the footer clock ([8d76196](https://github.com/crag-h4k/opencode-pillbox-statusline/commit/8d76196a629a235fa5b106ae97a0ab4ec9090509))
+* **tui:** ship the terminal half compiled so installed footers update ([8d76196](https://github.com/crag-h4k/opencode-pillbox-statusline/commit/8d76196a629a235fa5b106ae97a0ab4ec9090509))
+
 ## 0.1.0 (2026-10-17)
 
 
