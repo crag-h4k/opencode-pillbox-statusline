@@ -8,7 +8,7 @@ import test from "node:test"
 import { copilotToken, githubBase, parseCopilotUsage } from "../src/server/copilot.mjs"
 import { copilotApi, createTiers, DEFAULT_COPILOT_API, FAILURE_BACKOFF_MS, TIERS_TTL_MS } from "../src/server/tiers.mjs"
 import { createUsage, GATEWAY_MAX_BYTES, readGatewayFile, RETRY_MS } from "../src/server/usage.mjs"
-import { freshUsage, LIMIT_MAX_AGE_MS } from "../src/quota.mjs"
+import { CLOCK_SKEW_MS, freshUsage, LIMIT_MAX_AGE_MS } from "../src/quota.mjs"
 
 const SECRET = "secret-token-value"
 const ACCOUNT = "secret-account-id"
@@ -133,6 +133,16 @@ test("requests are throttled per account; failures keep the last figures; switch
   clock += 1
   const switched = await usage.get()
   assert.deepEqual(switched.providers.openai, { auth: "oauth" }, "the previous account's figures are not reused")
+})
+
+test("a figure fetched just after the display clock last ticked is not dropped", () => {
+  const usage = { auth: "oauth", updatedAt: 100_000, copilot: { usedPercent: 61, unlimited: false }, windows: [{ period: "week", usedPercent: 20 }] }
+  const { updatedAt: _, ...display } = usage
+  assert.deepEqual(freshUsage(usage, 100_000 - 30_000), display, "the footer clock ticks every 30 s")
+  assert.deepEqual(freshUsage(usage, 100_000 - CLOCK_SKEW_MS), display)
+  assert.deepEqual(freshUsage(usage, 100_000 - CLOCK_SKEW_MS - 1), { auth: "oauth" })
+  assert.deepEqual(freshUsage(usage, 100_000 + LIMIT_MAX_AGE_MS - 1), display)
+  assert.deepEqual(freshUsage(usage, 100_000 + LIMIT_MAX_AGE_MS), { auth: "oauth" })
 })
 
 test("stale figures are dropped before display", () => {

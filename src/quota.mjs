@@ -4,6 +4,9 @@
 // No host imports.
 
 export const LIMIT_MAX_AGE_MS = 5 * 60_000
+// The footer clock ticks every 30 s, so a figure fetched just after a tick is
+// dated slightly ahead of "now". Allow two ticks of lead, not a far-future date.
+export const CLOCK_SKEW_MS = 60_000
 
 function window(period, percent) {
   if (typeof percent !== "number" || !Number.isFinite(percent)) return undefined
@@ -34,7 +37,7 @@ export function parseClaudeUsage(body) {
 export function normalizeUsage(usage, now = Date.now()) {
   if (!usage || typeof usage.updatedAt !== "number" || !Number.isFinite(usage.updatedAt)) return undefined
   const age = now - usage.updatedAt
-  if (age < 0 || age >= LIMIT_MAX_AGE_MS || !Array.isArray(usage.windows)) return undefined
+  if (age < -CLOCK_SKEW_MS || age >= LIMIT_MAX_AGE_MS || !Array.isArray(usage.windows)) return undefined
   const windows = ["5h", "week"].flatMap((period) => {
     const value = usage.windows.find((item) => item?.period === period)
     const parsed = window(period, value?.usedPercent)
@@ -69,7 +72,7 @@ export function freshUsage(usage, now = Date.now()) {
   const copilot = usage.copilot
   const validCopilot = copilot && typeof copilot.unlimited === "boolean" && typeof copilot.usedPercent === "number" &&
     Number.isFinite(copilot.usedPercent)
-  if (validCopilot && age >= 0 && age < LIMIT_MAX_AGE_MS) {
+  if (validCopilot && age >= -CLOCK_SKEW_MS && age < LIMIT_MAX_AGE_MS) {
     out.copilot = { usedPercent: Math.min(100, Math.max(0, Math.round(copilot.usedPercent))), unlimited: copilot.unlimited }
   }
   if (usage.windows) {

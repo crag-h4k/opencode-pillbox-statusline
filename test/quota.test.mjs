@@ -1,7 +1,7 @@
 // test/quota.test.mjs
 import assert from "node:assert/strict"
 import test from "node:test"
-import { LIMIT_MAX_AGE_MS, limitSummary, normalizeUsage, parseClaudeUsage, parseCodexUsage } from "../src/quota.mjs"
+import { CLOCK_SKEW_MS, LIMIT_MAX_AGE_MS, limitSummary, normalizeUsage, parseClaudeUsage, parseCodexUsage } from "../src/quota.mjs"
 
 test("Codex classifies quota windows by duration, including weekly-only primary windows", () => {
   assert.deepEqual(parseCodexUsage({ rate_limit: {
@@ -44,11 +44,19 @@ test("normalized usage keeps only period and percent, clamped, and drops stale f
   assert.equal(normalizeUsage({ updatedAt: 1000, windows: "week" }, 1000), undefined)
 })
 
+test("a figure dated just ahead of a lagging display clock is still current", () => {
+  const usage = { updatedAt: 100_000, windows: [{ period: "week", usedPercent: 40 }] }
+  const kept = { updatedAt: 100_000, windows: [{ period: "week", usedPercent: 40 }] }
+  assert.deepEqual(normalizeUsage(usage, 100_000 - CLOCK_SKEW_MS), kept)
+  assert.equal(normalizeUsage(usage, 100_000 - CLOCK_SKEW_MS - 1), undefined)
+  assert.equal(normalizeUsage(usage, 100_000 + LIMIT_MAX_AGE_MS), undefined, "the expiry window does not move")
+})
+
 test("quota summaries show actual windows and expire during outages", () => {
   const usage = { updatedAt: 1000, windows: [{ period: "week", usedPercent: 92 }] }
   assert.deepEqual(limitSummary(usage, 1000), { text: "week 92%", usedPercent: 92 })
   assert.equal(limitSummary(usage, 1000 + LIMIT_MAX_AGE_MS), undefined)
-  assert.equal(limitSummary(usage, 999), undefined)
+  assert.equal(limitSummary(usage, 1000 - CLOCK_SKEW_MS - 1), undefined, "a far-future date is not current")
   assert.equal(limitSummary({ ...usage, windows: [] }, 1000), undefined)
   assert.deepEqual(limitSummary({ ...usage, windows: [
     { period: "week", usedPercent: 32 }, { period: "5h", usedPercent: 99 },
