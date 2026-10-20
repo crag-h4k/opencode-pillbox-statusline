@@ -61,6 +61,13 @@ repos:
         pass_filenames: false
         files: ^(.*\.(ts|tsx|mjs|json)|package(-lock)?\.json)$
 
+      - id: verify-pack
+        name: the packed tarball ships the compiled terminal half
+        entry: npm run verify-pack
+        language: system
+        pass_filenames: false
+        files: ^(src/.*|scripts/(build|verify-pack)\.mjs|package(-lock)?\.json)$
+
       - id: schema
         name: schema.json matches the options schema
         entry: node scripts/schema.mjs --check
