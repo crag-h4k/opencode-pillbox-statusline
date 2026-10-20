@@ -24,6 +24,8 @@ answers RPC calls.
   Keep their relative imports as siblings in `src/` (the build rewrites them),
   and verify a change to the terminal half through an npm install, not only a
   local path: a path load compiles the TSX and hides this failure.
+  `npm run verify-pack` checks the packed tarball for the same failure; it runs as
+  a hook and in the publish job.
 - Bind no leader keys. OpenCode reserves `<leader>h/j/k/l` for session
   navigation, and `opencode-sidequest` uses others.
 - Measure text with `src/render/width.mjs`. It must agree with OpenTUI, and
@@ -75,6 +77,7 @@ npm test
 npm run typecheck
 npm run schema
 npm run build
+npm run verify-pack
 prek run --all-files
 ```
 

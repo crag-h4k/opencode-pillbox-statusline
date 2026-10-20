@@ -44,6 +44,7 @@
     "typecheck": "tsc --noEmit",
     "schema": "node scripts/schema.mjs",
     "build": "node scripts/build.mjs",
+    "verify-pack": "node scripts/verify-pack.mjs",
     "prepack": "npm run build"
   },
   "peerDependencies": {

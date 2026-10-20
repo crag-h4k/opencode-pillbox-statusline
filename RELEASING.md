@@ -33,8 +33,9 @@ flowchart LR
 The publish job runs only when a release was just created and the repository
 variable `NPM_TRUSTED_PUBLISHING` is `true`. It uses the GitHub environment
 `npm`, installs from the lockfile without caches, builds the compiled terminal
-half, runs the tests, and stages the package. npm generates provenance
-automatically because the repository and the package are public.
+half, runs the tests, checks the packed tarball with `npm run verify-pack`, and
+stages the package. npm generates provenance automatically because the repository
+and the package are public.
 
 ## One-time setup
 
